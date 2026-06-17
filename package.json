@@ -1,9 +1,5 @@
 {
-<<<<<<< HEAD
-  "name": "insurence",
-=======
   "name": "hospital-management",
->>>>>>> 627e0a8735034d53c56a21d6ebc688b0adc488a6
   "private": true,
   "version": "0.0.0",
   "type": "module",
