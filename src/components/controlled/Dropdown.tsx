@@ -1,5 +1,5 @@
 import React from "react";
-import { Controller, type Control } from "react-hook-form";
+import { Controller, type Control, type FieldValues } from "react-hook-form";
 import Error from "./Error";
 import Label from "./Label";
 
@@ -7,7 +7,7 @@ type Option = string | { label: string; value: string | number };
 
 interface DropdownProps {
   name: string;
-  control: Control<any>;
+  control: Control<FieldValues>;
   required?: boolean;
   options?: Option[];
   label: string;

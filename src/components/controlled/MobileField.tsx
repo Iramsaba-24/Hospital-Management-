@@ -1,5 +1,5 @@
 import React from "react";
-import { useController, type Control } from "react-hook-form";
+import { useController, type Control, type FieldValues } from "react-hook-form";
 import Label from "./Label";
 import Error from "./Error";
 import { Mobile_Field } from "../../constants/RegexPattern";
@@ -7,7 +7,7 @@ import { Mobile_Field } from "../../constants/RegexPattern";
 interface MobileFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   name: string;
   label?: string;
-  control: Control<any>;
+  control: Control<FieldValues>;
   required?: boolean;
   disabled?: boolean;
 }

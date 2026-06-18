@@ -6,6 +6,7 @@ import {
   type Control,
   type FieldValues,
   type FieldPath,
+  type RegisterOptions,
 } from "react-hook-form";
 import Error from "./Error";
 import Label from "../controlled/Label";
@@ -18,7 +19,7 @@ interface PasswordProps<T extends FieldValues>
   className?: string;
   control: Control<T>;
   name: FieldPath<T>;
-  rules?: any;
+  rules?: RegisterOptions<T, FieldPath<T>>;
   inputClassName?: string;
 }
  

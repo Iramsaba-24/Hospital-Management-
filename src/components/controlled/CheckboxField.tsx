@@ -1,12 +1,12 @@
 import React from 'react';
-import { Controller, type Control } from 'react-hook-form';
+import { Controller, type Control, type FieldValues } from 'react-hook-form';
 import Label from './Label';
 import Error from './Error';
 
 interface CheckboxFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   name: string;
   label: string;
-  control: Control<any>;
+  control: Control<FieldValues>;
   required?: boolean;
 }
 

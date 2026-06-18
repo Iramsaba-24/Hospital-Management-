@@ -1,12 +1,12 @@
 import React from "react";
-import { Controller, type Control } from "react-hook-form";
+import { Controller, type Control, type FieldValues } from "react-hook-form";
 import Error from "./Error";
 import Label from "./Label";
 
 interface ToggleButtonProps {
   name: string;
   label?: string;
-  control?: Control<any>; 
+  control?: Control<FieldValues>;
   required?: boolean;
   value?: boolean;
   onChange?: (value: boolean) => void;
