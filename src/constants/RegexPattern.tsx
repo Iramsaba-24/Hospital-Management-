@@ -10,7 +10,7 @@ export const NUMBER = /^[0-9]+$/;
 export const IFSC_Code = /^[A-Z]{4}0[A-Z0-9]{6}$/;
 export const Mobile_Field = /^[1-9][0-9]{9}$/;
 export const Upload_Modal = /^.*(?:youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-export const Text_Field = /^[a-zA-Z0-9\s.,'"!_@?()\-]*$/;
+export const Text_Field = /^[a-zA-Z0-9\s.,'"!_@?()-]*$/;
 export const TextArea_Field = /^[\s\S]+$/;
 export const Time_Field =  /^(0?[1-9]|1[0-2]):[0-5][0-9](\s?(AM|PM))?(\s?-?\s?(0?[1-9]|1[0-2]):[0-5][0-9](\s?(AM|PM))?)?$/;
 export const AADHAR = /^\d{4}\s?\d{4}\s?\d{4}$/;
