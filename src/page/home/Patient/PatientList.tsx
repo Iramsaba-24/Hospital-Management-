@@ -1,19 +1,18 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form"; // Added for TextField controller integration
+import { useForm } from "react-hook-form"; 
 import { MdClose } from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Shared Custom Component Imports
-import Button from "../../../components/controlled/Button"; // Path adjustment might be required based on your file structure
-import TextField from "../../../components/controlled/TextField"; // Path adjustment might be required based on your file structure
-
-import Controltable from "../../../components/controlled/Controltable";
+import Button from "../../../components/controlled/Button"; 
+import TextField from "../../../components/controlled/TextField"; 
+import Controltable, { type Column } from "../../../components/controlled/Controltable"; // Imported Column type
 import AddPatientForm from "./Addpatientform";
 import PatientDetails from "../Patient/PatientDetails/PatientDetails";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
-type Patient = {
+type PatientData = {
   id: string;
   uhid: string;
   name: string;
@@ -27,7 +26,7 @@ type Patient = {
 };
 
 // ── Initial data ───────────────────────────────────────────────────────────────
-const initialPatients: Patient[] = [
+const initialPatients: PatientData[] = [
   { id: "PI000234", uhid: "PI000234", name: "Ramesh Patil",  gender: "Male",   age: 45, mobile: "9876543210", city: "Pune",    lastVisit: "12/02/2026", status: "Active",   visits: 5 },
   { id: "PI000235", uhid: "PI000235", name: "Sunita Sharma", gender: "Female", age: 32, mobile: "9123456789", city: "Mumbai",  lastVisit: "14/02/2026", status: "Critical", visits: 3 },
   { id: "PI000236", uhid: "PI000236", name: "Amit Desai",    gender: "Male",   age: 55, mobile: "9988776655", city: "Nashik",  lastVisit: "10/02/2026", status: "Active",   visits: 8 },
@@ -46,25 +45,25 @@ const genderColors: Record<string, string> = {
   Female: "bg-pink-100 text-pink-700",
 };
 
-const generateUhid = (patients: Patient[]) => {
+const generateUhid = (patients: PatientData[]) => {
   const last = patients[patients.length - 1]?.uhid ?? "PI000233";
   return `PI${String(parseInt(last.replace("PI", "")) + 1).padStart(6, "0")}`;
 };
 
 // ── Main Page Component ────────────────────────────────────────────────────────
 const Patient = () => {
-  const [patients, setPatients]         = useState<Patient[]>(initialPatients);
+  const [patients, setPatients]         = useState<PatientData[]>(initialPatients);
   const [search, setSearch]             = useState("");
   const [genderFilter, setGenderFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showAddForm, setShowAddForm]   = useState(false);
-  const [isSaving, setIsSaving]         = useState(false); // Controls custom button loader animation
+  const [isSaving, setIsSaving]         = useState(false); 
 
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
+  const [editingPatient, setEditingPatient] = useState<PatientData | null>(null);
 
   // Initialize React Hook Form for Edit Modal inputs
-  const { control, handleSubmit, reset } = useForm<Patient>();
+  const { control, handleSubmit, reset } = useForm<PatientData>();
 
   // Sync form values whenever a different user item is loaded into the editor
   useEffect(() => {
@@ -107,9 +106,8 @@ const Patient = () => {
     reset();
   };
 
-  const handleEditSave = (data: Patient) => {
+  const handleEditSave = (data: PatientData) => {
     setIsSaving(true);
-    // Simulate short loader latency action
     setTimeout(() => {
       setPatients((prev) => prev.map((p) => (p.id === data.id ? { ...data } : p)));
       toast.success(`${data.name}'s details updated successfully.`);
@@ -119,45 +117,42 @@ const Patient = () => {
   };
 
   const handleDelete = (id: string | number) => {
-    const patient = patients.find((p) => p.id === id);
     setPatients((prev) => prev.filter((p) => p.id !== id));
-    toast.error(`${patient?.name ?? "Patient"} removed.`);
   };
 
   const handleDeleteMultiple = (ids: (string | number)[]) => {
     const idSet = new Set(ids);
     setPatients((prev) => prev.filter((p) => !idSet.has(p.id)));
-    toast.error(`${ids.length} patient${ids.length > 1 ? "s" : ""} removed.`);
   };
 
-  const handleAddPatient = (newPatient: Omit<Patient, "id">) => {
+  const handleAddPatient = (newPatient: Omit<PatientData, "id">) => {
     const nextUhid = generateUhid(patients);
     setPatients((prev) => [...prev, { ...newPatient, id: nextUhid, uhid: nextUhid }]);
-    toast.success(`${newPatient.name} added successfully.`);
   };
 
-  // Table Structure
-  const columns = [
+  // Fixed Column signature typing mismatch to line up precisely with Controltable definitions
+  const columns: Column<PatientData>[] = [
     { key: "uhid", label: "UHID" },
     {
       key: "name",
       label: "Patient",
-      render: (v: string, row: Patient) => (
+      render: (v, row) => (
         <button
+          type="button"
           onClick={() => setSelectedPatientId(row.id)}
           className="font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer bg-transparent border-none p-0 text-left"
         >
-          {v}
+          {String(v)}
         </button>
       ),
     },
     {
       key: "gender",
       label: "Gender",
-      render: (v: string) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${genderColors[v] ?? "bg-gray-100 text-gray-600"}`}>
-          {v}
-        </span >
+      render: (v) => (
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${genderColors[String(v)] ?? "bg-gray-100 text-gray-600"}`}>
+          {String(v)}
+        </span>
       ),
     },
     { key: "age",       label: "Age" },
@@ -167,9 +162,9 @@ const Patient = () => {
     {
       key: "status",
       label: "Status",
-      render: (v: string) => (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[v] ?? "bg-gray-100 text-gray-500"}`}>
-          {v}
+      render: (v) => (
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[String(v)] ?? "bg-gray-100 text-gray-500"}`}>
+          {String(v)}
         </span>
       ),
     },
@@ -203,7 +198,6 @@ const Patient = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={handleEditClose} />
           
-          {/* Form wrapper element handles React Hook Form submission tracking cleanly */}
           <form 
             onSubmit={handleSubmit(handleEditSave)} 
             className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 z-10"
@@ -213,7 +207,7 @@ const Patient = () => {
               <button
                 type="button"
                 onClick={handleEditClose}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 <MdClose size={20} />
               </button>
@@ -290,7 +284,6 @@ const Patient = () => {
               </div>
             </div>
 
-            {/* Modal Actions using your custom layout components */}
             <div className="flex justify-end gap-3 mt-6">
               <button
                 type="button"
@@ -311,7 +304,8 @@ const Patient = () => {
         </div>
       )}
 
-      <Controltable
+      {/* Explicitly passing <PatientData> generic constraints down to cleanly align with columns data values */}
+      <Controltable<PatientData>
         title="Patient List"
         totalLabel={`${patients.length} Patients`}
         columns={columns}
@@ -330,7 +324,7 @@ const Patient = () => {
             <select
               value={genderFilter}
               onChange={(e) => setGenderFilter(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600 bg-white"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600 bg-white cursor-pointer"
             >
               <option value="All">Gender</option>
               <option value="Male">Male</option>
@@ -339,7 +333,7 @@ const Patient = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600 bg-white"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600 bg-white cursor-pointer"
             >
               <option value="All">Status</option>
               <option value="Active">Active</option>

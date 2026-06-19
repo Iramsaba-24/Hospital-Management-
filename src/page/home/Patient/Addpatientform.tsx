@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { MdClose, MdCloudUpload } from "react-icons/md";
-import { toast } from "react-toastify";
 import AadharField from "../../../components/controlled/AadharField";
 import BirthDateField from "../../../components/controlled/BirthDateField";
 import Dropdown from "../../../components/controlled/Dropdown";
@@ -97,12 +96,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
     };
 
     onSave(newPatient);
-    // Toast is fired from parent (Patient.tsx) after onSave completes
     onClose();
-  };
-
-  const onError = () => {
-    toast.error("Please fill in all required fields.");
   };
 
   const bloodGroupOptions = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
@@ -137,14 +131,13 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
         </div>
 
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit, onError)} className="px-6 pb-6 space-y-4">
-            {/* ── Personal Information ──────────────────────────────── */}
+          <form onSubmit={handleSubmit(onSubmit)} className="px-6 pb-6 space-y-4">
+
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Personal Information
               </h3>
 
-              {/* Row 1: UHID, Full Name, Guardian Name */}
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">UHID *</label>
@@ -175,7 +168,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                 </div>
               </div>
 
-              {/* Row 2: Gender, DOB, Blood Group, Marital Status, Photo */}
               <div className="grid grid-cols-5 gap-4">
                 <div>
                   <Dropdown
@@ -212,7 +204,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     options={maritalStatusOptions}
                   />
                 </div>
-                {/* Photo upload */}
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">Patient Photo</label>
                   <label
@@ -233,7 +224,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
               </div>
             </div>
 
-            {/* ── Contact Information ───────────────────────────────── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Contact Information
@@ -269,7 +259,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
               </div>
             </div>
 
-            {/* ── Medical Information ───────────────────────────────── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Medical Information
@@ -296,7 +285,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
               </div>
             </div>
 
-            {/* ── Insurance / TPA ───────────────────────────────────── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Insurance / TPA
@@ -331,7 +319,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
               </div>
             </div>
 
-            {/* ── Identification ────────────────────────────────────── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Identification
@@ -347,7 +334,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                 </div>
               </div>
 
-              {/* Save button */}
               <div className="flex justify-end mt-5">
                 <button
                   type="submit"

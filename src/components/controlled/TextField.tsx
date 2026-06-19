@@ -1,14 +1,19 @@
 import React from 'react';
-import { useController, type Control, type FieldValues } from 'react-hook-form';
+import {
+  useController,
+  type Control,
+  type FieldValues,
+  type Path,
+} from 'react-hook-form';
 import { Text_Field } from '../../constants/RegexPattern';
 import Label from './Label';
 import Error from './Error';
 
-interface TextFieldProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
-  name: string;
+interface TextFieldProps<TFieldValues extends FieldValues = FieldValues>
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'name'> {
+  name: Path<TFieldValues>;
   label?: string;
-  control: Control<FieldValues>;
+  control: Control<TFieldValues>;
   required?: boolean;
   labelClassName?: string;
   inputClassName?: string;
@@ -17,10 +22,10 @@ interface TextFieldProps
     pattern?: RegExp;
   };
   onChange?: (value: string) => void;
-  disabled?: boolean; 
+  disabled?: boolean;
 }
 
-const TextField: React.FC<TextFieldProps> = ({
+const TextField = <TFieldValues extends FieldValues = FieldValues>({
   name,
   label,
   control,
@@ -28,9 +33,9 @@ const TextField: React.FC<TextFieldProps> = ({
   inputClassName = "",
   required = false,
   onChange,
-  disabled = false, 
+  disabled = false,
   ...rest
-}) => {
+}: TextFieldProps<TFieldValues>) => {
   const validationRules = {
     ...(required && { required: `${label} is required` }),
     pattern: {
@@ -49,7 +54,7 @@ const TextField: React.FC<TextFieldProps> = ({
   });
 
   const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    if (disabled) return;     
+    if (disabled) return;
     field.onChange(e);
     if (onChange) onChange(e.target.value);
   };
@@ -68,7 +73,7 @@ const TextField: React.FC<TextFieldProps> = ({
         {...field}
         {...rest}
         id={name}
-        disabled={disabled}   
+        disabled={disabled}
         onChange={handleChange}
         aria-invalid={!!error}
         className={`mt-1 block w-full px-4 py-2 border ${
@@ -84,5 +89,3 @@ const TextField: React.FC<TextFieldProps> = ({
 };
 
 export default TextField;
-
- 

@@ -1,13 +1,13 @@
-import React from "react";
-import { Controller, type Control, type FieldValues } from "react-hook-form";
+// import React from "react";
+import { Controller, type Control, type FieldValues, type Path } from "react-hook-form";
 import Error from "./Error";
 import Label from "./Label";
 
 type Option = string | { label: string; value: string | number };
 
-interface DropdownProps {
-  name: string;
-  control: Control<FieldValues>;
+interface DropdownProps<T extends FieldValues> {
+  name: Path<T>;
+  control: Control<T>;
   required?: boolean;
   options?: Option[];
   label: string;
@@ -17,14 +17,14 @@ interface DropdownProps {
   disabled?: boolean;
 }
 
-const Dropdown: React.FC<DropdownProps> = ({
+const Dropdown = <T extends FieldValues>({
   name,
   label,
   control,
   required = false,
   disabled = false,
   options = [],
-}) => {
+}: DropdownProps<T>) => {
   return (
     <div className="w-full mx-auto mb-2">
       <Label label={label} required={required} />
@@ -37,7 +37,7 @@ const Dropdown: React.FC<DropdownProps> = ({
           <>
             <select
               {...field}
-              id={name}
+              id={name as string}
               disabled={disabled}
               className={`mt-1 w-full p-2 border rounded-md shadow ${
                 error ? "border-red-500" : "border-gray-300"

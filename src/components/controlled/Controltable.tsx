@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MdDelete, MdEdit, MdVisibility } from "react-icons/md";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+type RowBase = {
+  id: string | number;
+};
 
 export type Column<T> = {
-  key: keyof T | string;
+  key: keyof T;
   label: string;
-  render?: (value: any, row: T) => React.ReactNode;
+  render?: (value: T[keyof T], row: T) => React.ReactNode;
 };
 
 export type ActionButton<T> = {
@@ -17,50 +19,36 @@ export type ActionButton<T> = {
   className?: string;
 };
 
-type Props<T extends { id: string | number; [key: string]: any }> = {
-  // ── Data ────────────────────────────────────────────────────────
+type Props<T extends RowBase> = {
   columns: Column<T>[];
   data: T[];
 
-  // ── Header ──────────────────────────────────────────────────────
   title: string;
   totalLabel?: string;
-
-  // ── Search & filters ────────────────────────────────────────────
   searchValue?: string;
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   filterSlot?: React.ReactNode;
 
-  // ── Add button ──────────────────────────────────────────────────
   addButtonLabel?: string;
   onAddClick?: () => void;
 
-  // ── Built-in action buttons (pass handler to show, omit to hide) ─
-  onView?:   (id: string | number) => void;   // shows 👁 View button
-  onEdit?:   (id: string | number) => void;   // shows ✏ Edit button
-  onDelete?: (id: string | number) => void;   // shows 🗑 Delete button
+  onView?:   (id: string | number) => void;
+  onEdit?:   (id: string | number) => void;
+  onDelete?: (id: string | number) => void;
 
-  // ── Extra custom action buttons ─────────────────────────────────
   actions?: ActionButton<T>[];
-
-  // ── Multiple delete (omit to hide checkboxes) ───────────────────
   onDeleteMultiple?: (ids: (string | number)[]) => void;
   deleteMultipleLabel?: string;
 
-  // ── Row click ───────────────────────────────────────────────────
+
   onRowClick?: (row: T) => void;
 
-  // ── Pagination ──────────────────────────────────────────────────
   itemsPerPage?: number;
-
-  // ── Empty state ─────────────────────────────────────────────────
   emptyMessage?: string;
 };
 
-// ── Component ──────────────────────────────────────────────────────────────────
-
-const Controltable = <T extends { id: string | number; [key: string]: any }>({
+const Controltable = <T extends RowBase>({
   columns,
   data,
   title,
@@ -82,64 +70,64 @@ const Controltable = <T extends { id: string | number; [key: string]: any }>({
   emptyMessage = "No data found.",
 }: Props<T>) => {
 
-  const [page, setPage]                 = useState(1);
-  const [selectedIds, setSelectedIds]   = useState<Set<string | number>>(new Set());
-  const [selectAll, setSelectAll]       = useState(false);
+  const [page, setPage]               = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string | number>>(new Set());
 
   const totalPages    = Math.max(1, Math.ceil(data.length / itemsPerPage));
   const startIndex    = (page - 1) * itemsPerPage;
   const paginatedData = data.slice(startIndex, startIndex + itemsPerPage);
 
-  // ── Reset selections when data changes (same logic as demo) ───────────────
-  useEffect(() => {
-    setSelectedIds(new Set());
-    setSelectAll(false);
-  }, [data]);
+  const selectAll =
+    paginatedData.length > 0 &&
+    paginatedData.every((item) => selectedIds.has(item.id));
 
-  // ── Sync selectAll state (same logic as demo) ─────────────────────────────
-  useEffect(() => {
-    setSelectAll(
-      selectedIds.size === paginatedData.length && paginatedData.length > 0
-    );
-  }, [selectedIds, paginatedData]);
+  const [lastData, setLastData] = useState(data);
+  if (lastData !== data) {
+    setLastData(data);
+    if (selectedIds.size > 0) setSelectedIds(new Set());
+  }
 
-  // ── Reset page on search ──────────────────────────────────────────────────
   const handleSearch = (value: string) => {
     setPage(1);
     setSelectedIds(new Set());
     onSearchChange?.(value);
   };
 
-  // ── Select all on current page (uses row.id like the demo) ────────────────
   const handleSelectAll = (checked: boolean) => {
     const pageIds = new Set(paginatedData.map((item) => item.id));
     const next    = new Set(selectedIds);
-    pageIds.forEach((id) => (checked ? next.add(id) : next.delete(id)));
+    pageIds.forEach((id) => {
+      if (checked) {
+        next.add(id);
+      } else {
+        next.delete(id);
+      }
+    });
     setSelectedIds(next);
   };
 
-  // ── Select single row ─────────────────────────────────────────────────────
   const handleRowSelect = (id: string | number, checked: boolean) => {
     const next = new Set(selectedIds);
-    checked ? next.add(id) : next.delete(id);
+    if (checked) {
+      next.add(id);
+    } else {
+      next.delete(id);
+    }
     setSelectedIds(next);
   };
 
-  // ── Delete selected — passes ids array (same as demo) ────────────────────
   const handleDeleteSelected = () => {
     onDeleteMultiple?.(Array.from(selectedIds));
     setSelectedIds(new Set());
   };
 
-  // ── Visibility flags ──────────────────────────────────────────────────────
-  const showCheckboxes    = !!onDeleteMultiple;
-  const showBuiltinActions = onView || onEdit || onDelete;
+  const showCheckboxes     = !!onDeleteMultiple;
+  const showBuiltinActions = !!(onView || onEdit || onDelete);
   const showActionsColumn  = showBuiltinActions || actions.length > 0;
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
 
-      {/* ── Header ──────────────────────────────────────────────── */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold text-gray-800">{title}</h2>
@@ -172,7 +160,7 @@ const Controltable = <T extends { id: string | number; [key: string]: any }>({
           )}
         </div>
       </div>
-      
+
       {(onSearchChange || filterSlot) && (
         <div className="flex items-center gap-3 mb-5 flex-wrap">
           {onSearchChange && (
@@ -241,7 +229,6 @@ const Controltable = <T extends { id: string | number; [key: string]: any }>({
                   } ${onRowClick ? "cursor-pointer" : ""}`}
                 >
 
-                  {/* Checkbox cell — stops row click propagation */}
                   {showCheckboxes && (
                     <td className="py-3 pr-4 w-8" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -252,17 +239,14 @@ const Controltable = <T extends { id: string | number; [key: string]: any }>({
                       />
                     </td>
                   )}
-
-                  {/* Data cells */}
                   {columns.map((col) => (
                     <td key={String(col.key)} className="py-3 pr-6 text-gray-700 whitespace-nowrap">
                       {col.render
-                        ? col.render(row[col.key as string], row)
-                        : String(row[col.key as string] ?? "")}
+                        ? col.render(row[col.key], row)
+                        : String(row[col.key] ?? "")}
                     </td>
                   ))}
 
-                  {/* Actions cell — stops row click propagation */}
                   {showActionsColumn && (
                     <td className="py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
