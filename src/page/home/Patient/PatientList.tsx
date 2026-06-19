@@ -1,12 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form"; // Added for TextField controller integration
 import { MdClose } from "react-icons/md";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+// Shared Custom Component Imports
+import Button from "../../../components/controlled/Button"; // Path adjustment might be required based on your file structure
+import TextField from "../../../components/controlled/TextField"; // Path adjustment might be required based on your file structure
+
 import Controltable from "../../../components/controlled/Controltable";
 import AddPatientForm from "./Addpatientform";
+import PatientDetails from "../Patient/PatientDetails/PatientDetails";
 
-// ── Type ───────────────────────────────────────────────────────────────────────
-
+// ── Types ──────────────────────────────────────────────────────────────────────
 type Patient = {
   id: string;
   uhid: string;
@@ -21,7 +27,6 @@ type Patient = {
 };
 
 // ── Initial data ───────────────────────────────────────────────────────────────
-
 const initialPatients: Patient[] = [
   { id: "PI000234", uhid: "PI000234", name: "Ramesh Patil",  gender: "Male",   age: 45, mobile: "9876543210", city: "Pune",    lastVisit: "12/02/2026", status: "Active",   visits: 5 },
   { id: "PI000235", uhid: "PI000235", name: "Sunita Sharma", gender: "Female", age: 32, mobile: "9123456789", city: "Mumbai",  lastVisit: "14/02/2026", status: "Critical", visits: 3 },
@@ -29,8 +34,6 @@ const initialPatients: Patient[] = [
   { id: "PI000237", uhid: "PI000237", name: "Priya Joshi",   gender: "Female", age: 28, mobile: "9870001234", city: "Pune",    lastVisit: "15/02/2026", status: "Inactive", visits: 1 },
   { id: "PI000238", uhid: "PI000238", name: "Ravi Kumar",    gender: "Male",   age: 60, mobile: "9765432100", city: "Solapur", lastVisit: "11/02/2026", status: "Critical", visits: 6 },
 ];
-
-// ── Badge helpers ──────────────────────────────────────────────────────────────
 
 const statusColors: Record<string, string> = {
   Active:   "bg-green-100 text-green-700",
@@ -43,27 +46,43 @@ const genderColors: Record<string, string> = {
   Female: "bg-pink-100 text-pink-700",
 };
 
-// ── UHID generator ─────────────────────────────────────────────────────────────
-
 const generateUhid = (patients: Patient[]) => {
   const last = patients[patients.length - 1]?.uhid ?? "PI000233";
   return `PI${String(parseInt(last.replace("PI", "")) + 1).padStart(6, "0")}`;
 };
 
-// ── Page ───────────────────────────────────────────────────────────────────────
-
+// ── Main Page Component ────────────────────────────────────────────────────────
 const Patient = () => {
   const [patients, setPatients]         = useState<Patient[]>(initialPatients);
   const [search, setSearch]             = useState("");
   const [genderFilter, setGenderFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showAddForm, setShowAddForm]   = useState(false);
+  const [isSaving, setIsSaving]         = useState(false); // Controls custom button loader animation
 
-  // Edit modal
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
-  const [form, setForm]                     = useState<Patient | null>(null);
 
-  // ── Filter ────────────────────────────────────────────────────────────────
+  // Initialize React Hook Form for Edit Modal inputs
+  const { control, handleSubmit, reset } = useForm<Patient>();
+
+  // Sync form values whenever a different user item is loaded into the editor
+  useEffect(() => {
+    if (editingPatient) {
+      reset(editingPatient);
+    }
+  }, [editingPatient, reset]);
+
+  if (selectedPatientId !== null) {
+    return (
+      <PatientDetails
+        patientId={selectedPatientId}
+        onBack={() => setSelectedPatientId(null)}
+      />
+    );
+  }
+
+  // ── Filter Data ───────────────────────────────────────────────────────────
   const filtered = patients.filter((p) => {
     const matchSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -76,65 +95,69 @@ const Patient = () => {
     );
   });
 
-  // ── Edit handlers ─────────────────────────────────────────────────────────
+  // ── Action Handlers ───────────────────────────────────────────────────────
   const handleEdit = (id: string | number) => {
     const patient = patients.find((p) => p.id === id);
     if (!patient) return;
     setEditingPatient(patient);
-    setForm({ ...patient });
   };
 
   const handleEditClose = () => {
     setEditingPatient(null);
-    setForm(null);
+    reset();
   };
 
-  const handleEditSave = () => {
-    if (!form) return;
-    setPatients((prev) => prev.map((p) => (p.id === form.id ? { ...form } : p)));
-    toast.success(`${form.name}'s details updated successfully.`);
-    handleEditClose();
+  const handleEditSave = (data: Patient) => {
+    setIsSaving(true);
+    // Simulate short loader latency action
+    setTimeout(() => {
+      setPatients((prev) => prev.map((p) => (p.id === data.id ? { ...data } : p)));
+      toast.success(`${data.name}'s details updated successfully.`);
+      setIsSaving(false);
+      handleEditClose();
+    }, 400);
   };
 
-  const handleFormChange = (field: keyof Patient, value: string | number) => {
-    if (!form) return;
-    setForm({ ...form, [field]: value });
-  };
-
-  // ── Single delete ─────────────────────────────────────────────────────────
   const handleDelete = (id: string | number) => {
     const patient = patients.find((p) => p.id === id);
     setPatients((prev) => prev.filter((p) => p.id !== id));
     toast.error(`${patient?.name ?? "Patient"} removed.`);
   };
 
-  // ── Multiple delete ───────────────────────────────────────────────────────
   const handleDeleteMultiple = (ids: (string | number)[]) => {
     const idSet = new Set(ids);
     setPatients((prev) => prev.filter((p) => !idSet.has(p.id)));
     toast.error(`${ids.length} patient${ids.length > 1 ? "s" : ""} removed.`);
   };
 
-  // ── Add patient ───────────────────────────────────────────────────────────
   const handleAddPatient = (newPatient: Omit<Patient, "id">) => {
     const nextUhid = generateUhid(patients);
     setPatients((prev) => [...prev, { ...newPatient, id: nextUhid, uhid: nextUhid }]);
     toast.success(`${newPatient.name} added successfully.`);
   };
 
-  // ── Columns ───────────────────────────────────────────────────────────────
+  // Table Structure
   const columns = [
-    { key: "uhid",      label: "UHID" },
+    { key: "uhid", label: "UHID" },
     {
-      key: "name", label: "Patient",
-      render: (v: string) => <span className="font-semibold text-gray-800">{v}</span>,
+      key: "name",
+      label: "Patient",
+      render: (v: string, row: Patient) => (
+        <button
+          onClick={() => setSelectedPatientId(row.id)}
+          className="font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer bg-transparent border-none p-0 text-left"
+        >
+          {v}
+        </button>
+      ),
     },
     {
-      key: "gender", label: "Gender",
+      key: "gender",
+      label: "Gender",
       render: (v: string) => (
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${genderColors[v] ?? "bg-gray-100 text-gray-600"}`}>
           {v}
-        </span>
+        </span >
       ),
     },
     { key: "age",       label: "Age" },
@@ -142,7 +165,8 @@ const Patient = () => {
     { key: "city",      label: "City" },
     { key: "lastVisit", label: "Last Visit" },
     {
-      key: "status", label: "Status",
+      key: "status",
+      label: "Status",
       render: (v: string) => (
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[v] ?? "bg-gray-100 text-gray-500"}`}>
           {v}
@@ -154,8 +178,6 @@ const Patient = () => {
 
   return (
     <div className="p-6">
-
-      {/* ── Toast Container ──────────────────────────────────────── */}
       <ToastContainer
         position="top-right"
         autoClose={3000}
@@ -167,7 +189,7 @@ const Patient = () => {
         theme="light"
       />
 
-      {/* ── Add Patient Modal ────────────────────────────────────── */}
+      {/* ── Add Patient Modal ── */}
       {showAddForm && (
         <AddPatientForm
           onClose={() => setShowAddForm(false)}
@@ -176,17 +198,20 @@ const Patient = () => {
         />
       )}
 
-      {/* ── Edit Patient Modal ───────────────────────────────────── */}
-      {editingPatient && form && (
+      {/* ── Edit Patient Modal ── */}
+      {editingPatient && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-            onClick={handleEditClose}
-          />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 z-10">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={handleEditClose} />
+          
+          {/* Form wrapper element handles React Hook Form submission tracking cleanly */}
+          <form 
+            onSubmit={handleSubmit(handleEditSave)} 
+            className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 z-10"
+          >
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-gray-800">Edit Patient</h3>
               <button
+                type="button"
                 onClick={handleEditClose}
                 className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors"
               >
@@ -194,69 +219,69 @@ const Patient = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
               <div className="col-span-2">
-                <label className="text-xs font-medium text-gray-500 mb-1 block">Full Name</label>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => handleFormChange("name", e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+                <TextField
+                  name="name"
+                  label="Full Name"
+                  control={control}
+                  required
                 />
               </div>
+              
               <div>
                 <label className="text-xs font-medium text-gray-500 mb-1 block">Gender</label>
                 <select
-                  value={form.gender}
-                  onChange={(e) => handleFormChange("gender", e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-700"
+                  {...control.register("gender")}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-700 bg-white"
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                 </select>
               </div>
+
               <div>
-                <label className="text-xs font-medium text-gray-500 mb-1 block">Age</label>
-                <input
+                <TextField
+                  name="age"
+                  label="Age"
                   type="number"
-                  value={form.age}
-                  onChange={(e) => handleFormChange("age", Number(e.target.value))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+                  control={control}
+                  required
                 />
               </div>
+
               <div>
-                <label className="text-xs font-medium text-gray-500 mb-1 block">Mobile</label>
-                <input
-                  type="text"
-                  value={form.mobile}
-                  onChange={(e) => handleFormChange("mobile", e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+                <TextField
+                  name="mobile"
+                  label="Mobile"
+                  control={control}
+                  required
                 />
               </div>
+
               <div>
-                <label className="text-xs font-medium text-gray-500 mb-1 block">City</label>
-                <input
-                  type="text"
-                  value={form.city}
-                  onChange={(e) => handleFormChange("city", e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+                <TextField
+                  name="city"
+                  label="City"
+                  control={control}
+                  required
                 />
               </div>
-              <div>
-                <label className="text-xs font-medium text-gray-500 mb-1 block">Last Visit</label>
-                <input
-                  type="text"
-                  value={form.lastVisit}
-                  onChange={(e) => handleFormChange("lastVisit", e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400"
+
+              <div className="col-span-2">
+                <TextField
+                  name="lastVisit"
+                  label="Last Visit"
+                  control={control}
+                  required
                 />
               </div>
-              <div>
+
+              <div className="col-span-2 mt-1">
                 <label className="text-xs font-medium text-gray-500 mb-1 block">Status</label>
                 <select
-                  value={form.status}
-                  onChange={(e) => handleFormChange("status", e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-700"
+                  {...control.register("status")}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-700 bg-white"
                 >
                   <option value="Active">Active</option>
                   <option value="Critical">Critical</option>
@@ -265,21 +290,24 @@ const Patient = () => {
               </div>
             </div>
 
+            {/* Modal Actions using your custom layout components */}
             <div className="flex justify-end gap-3 mt-6">
               <button
+                type="button"
                 onClick={handleEditClose}
-                className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
-              <button
-                onClick={handleEditSave}
-                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                Save Changes
-              </button>
+              
+              <Button
+                name="Save Changes"
+                type="submit"
+                loading={isSaving}
+                showAlways={true}
+              />
             </div>
-          </div>
+          </form>
         </div>
       )}
 
@@ -288,26 +316,21 @@ const Patient = () => {
         totalLabel={`${patients.length} Patients`}
         columns={columns}
         data={filtered}
-
         onEdit={handleEdit}
         onDelete={handleDelete}
-
         onDeleteMultiple={handleDeleteMultiple}
         deleteMultipleLabel="Delete Selected"
-
         addButtonLabel="+ Add Patient"
         onAddClick={() => setShowAddForm(true)}
-
         searchValue={search}
         onSearchChange={setSearch}
         searchPlaceholder="Search by UHID, name, mobile"
-
         filterSlot={
           <>
             <select
               value={genderFilter}
               onChange={(e) => setGenderFilter(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600 bg-white"
             >
               <option value="All">Gender</option>
               <option value="Male">Male</option>
@@ -316,7 +339,7 @@ const Patient = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600 bg-white"
             >
               <option value="All">Status</option>
               <option value="Active">Active</option>
@@ -325,7 +348,6 @@ const Patient = () => {
             </select>
           </>
         }
-
         itemsPerPage={10}
         emptyMessage="No patients found."
       />

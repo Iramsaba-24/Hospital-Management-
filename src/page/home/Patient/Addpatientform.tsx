@@ -160,7 +160,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="fullName"
                     label="Full Name"
                     required={true}
-                    control={control as any}
+                    control={control}
                     placeholder="Enter full name"
                   />
                 </div>
@@ -169,7 +169,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="guardianName"
                     label="Guardian Name"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="Enter guardian name"
                   />
                 </div>
@@ -182,7 +182,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="gender"
                     label="Gender"
                     required={true}
-                    control={control as any}
+                    control={control}
                     options={["Male", "Female", "Other"]}
                   />
                 </div>
@@ -191,7 +191,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="dob"
                     label="Date of Birth"
                     required={true}
-                    control={control as any}
+                    control={control}
                   />
                 </div>
                 <div>
@@ -199,7 +199,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="bloodGroup"
                     label="Blood Group"
                     required={false}
-                    control={control as any}
+                    control={control}
                     options={bloodGroupOptions}
                   />
                 </div>
@@ -208,7 +208,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="maritalStatus"
                     label="Marital Status"
                     required={false}
-                    control={control as any}
+                    control={control}
                     options={maritalStatusOptions}
                   />
                 </div>
@@ -244,7 +244,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="mobile"
                     label="Mobile Number"
                     required={true}
-                    control={control as any}
+                    control={control}
                     placeholder="10-digit number"
                   />
                 </div>
@@ -253,7 +253,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="email"
                     label="Email"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="example@email.com"
                   />
                 </div>
@@ -262,7 +262,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="address"
                     label="Address"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="Street, City"
                   />
                 </div>
@@ -280,7 +280,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="allergies"
                     label="Known Allergies"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="e.g. Penicillin, Dust"
                   />
                 </div>
@@ -289,7 +289,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="remarks"
                     label="Remarks"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="Any notes"
                   />
                 </div>
@@ -307,7 +307,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="tpaProvider"
                     label="TPA Provider"
                     required={false}
-                    control={control as any}
+                    control={control}
                     options={tpaProviderOptions}
                   />
                 </div>
@@ -316,7 +316,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="tpaId"
                     label="TPA ID"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="TPA card number"
                   />
                 </div>
@@ -325,7 +325,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="tpaValidity"
                     label="TPA Validity"
                     required={false}
-                    control={control as any}
+                    control={control}
                   />
                 </div>
               </div>
@@ -342,7 +342,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="nationalId"
                     label="National ID / Aadhaar"
                     required={false}
-                    control={control as any}
+                    control={control}
                   />
                 </div>
               </div>
