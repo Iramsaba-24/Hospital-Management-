@@ -32,7 +32,7 @@ const AadharField = <T extends FieldValues>({
   };
  
   const {
-    field,
+     field: { value, onBlur, ref, onChange },
     fieldState: { error },
   } = useController({
     name,
@@ -54,7 +54,7 @@ const AadharField = <T extends FieldValues>({
   const handleChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     if (disabled) return;
     const raw = e.target.value.replace(/\D/g, "").slice(0, 12);
-    field.onChange(raw);
+    onChange(raw);
   };
  
   return (
@@ -69,10 +69,10 @@ const AadharField = <T extends FieldValues>({
         placeholder="XXXX XXXX XXXX"
         disabled={disabled}
         maxLength={14}
-        value={formatAadhar(String(field.value ?? ""))}
+        value={formatAadhar(String(value ?? ""))}
         onChange={handleChange}
-        onBlur={field.onBlur}
-        ref={field.ref}
+        onBlur={onBlur}
+        ref={ref}
         aria-invalid={!!error}
         className={`mt-1 block w-full px-4 py-2 border ${
           error ? "border-red-500" : "border-gray-300"

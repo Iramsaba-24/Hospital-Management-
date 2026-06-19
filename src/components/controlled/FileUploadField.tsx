@@ -1,4 +1,4 @@
-import { Controller, type Control, type FieldValues } from "react-hook-form";
+import { Controller, useWatch, type Control, type FieldValues } from "react-hook-form";
 import Label from "./Label";
 import Error from "./Error";
 import type { Path } from "react-hook-form";
@@ -28,7 +28,16 @@ const FileUploadField = <T extends FieldValues = FieldValues>({
   const [fileSizeError, setFileSizeError] = useState<string | null>(null);
  
   const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
- 
+ const fieldValue = useWatch({
+  control,
+  name,
+});
+
+useEffect(() => {
+  if (!fieldValue && fileInputRef.current) {
+    fileInputRef.current.value = "";
+  }
+}, [fieldValue]);
   return (
     <div>
       {label && (
@@ -40,12 +49,6 @@ const FileUploadField = <T extends FieldValues = FieldValues>({
         control={control}
         rules={required ? { required: "This field is mandatory." } : {}}
         render={({ field: { onChange, value, ref, ...field }, fieldState: { error } }) => {
-          useEffect(() => {
-            if (!value && fileInputRef.current) {
-              fileInputRef.current.value = "";
-            }
-          }, [value]);
- 
           return (
             <>
               {existingFileUrl && (

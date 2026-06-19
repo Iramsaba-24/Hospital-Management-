@@ -1,5 +1,6 @@
 // hooks/useBlobImage.ts
 import { useEffect, useRef, useState } from "react";
+import AxiosFunc from "../utils/axios";
 
 type UseBlobImageResult = {
   src: string | null;
@@ -32,13 +33,12 @@ export function useBlobImage(
         objectUrlRef.current = null;
       }
     };
-  }, [deps]);
+  }, [deps, fetcher]);
 
   return { src, loading, error };
 }
 
 // services/openDocument.ts
-import AxiosFunc from "../utils/axios";
 
 export const openDocument = async (documentPath: string) => {
   if (!documentPath) {

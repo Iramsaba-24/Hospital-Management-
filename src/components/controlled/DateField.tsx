@@ -1,39 +1,19 @@
-import React, { useEffect } from "react";
-import { Controller, type Control } from "react-hook-form";
+import React from "react";
+import { Controller, type Control, type FieldValues } from "react-hook-form";
 import Label from "../controlled/Label";
 import Error from "./Error";
+import { convertToDateInputFormat } from "../../utils/dateUtils";
 
-interface DateFieldProps {
+
+type DateFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
   name: string;
   label?: string;
-  control: Control<any>;
+  control: Control<FieldValues>;
   required?: boolean;
   disabled?: boolean;
   onlyToday?: boolean;
-  [key: string]: any;
-}
-
-export const convertToDateInputFormat = (dateStr: string): string => {
-  if (!dateStr) return "";
-
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
-    const [day, month, year] = dateStr.split("/");
-    return `${year}-${month}-${day}`;
-  }
-
-  try {
-    const date = new Date(dateStr);
-    if (!isNaN(date.getTime())) {
-      return date.toISOString().split("T")[0];
-    }
-  } catch {
-    return "";
-  }
-
-  return "";
 };
+
 
 const getTodayDate = (): string => {
   return new Date().toISOString().split("T")[0];
@@ -57,15 +37,12 @@ const DateField: React.FC<DateFieldProps> = ({
       <Controller
         name={name}
         control={control}
+        defaultValue={today}
         rules={{
           required: required ? "Date is required" : false,
         }}
         render={({ field, fieldState: { error } }) => {
-          useEffect(() => {
-            if (!field.value) {
-              field.onChange(today);
-            }
-          }, [field.value, field.onChange, today]);
+          
 
           const displayValue = field.value
             ? convertToDateInputFormat(field.value)

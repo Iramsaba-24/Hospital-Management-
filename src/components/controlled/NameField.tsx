@@ -1,5 +1,5 @@
 import React from "react";
-import { Controller } from "react-hook-form";
+import { Controller, type FieldValues } from "react-hook-form";
 import Label from "./Label";
 import { type Control } from "react-hook-form";
 import Error from "./Error";
@@ -9,7 +9,7 @@ interface NameFieldProps {
   label?: string;
   placeholder?: string;
   required?: boolean;
-  control: Control<any>;
+  control: Control<FieldValues>;
   pattern?: RegExp;
   patternMessage?: string;
   disabled?: boolean;

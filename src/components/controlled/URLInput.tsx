@@ -1,12 +1,12 @@
 import React, {type InputHTMLAttributes } from 'react';
-import { Controller,type Control } from 'react-hook-form';
+import { Controller,type Control, type FieldValues } from 'react-hook-form';
 import { FiLink } from 'react-icons/fi';
 import { URL_REGEX } from '../../constants/RegexPattern'; 
 import Error from './Error';
 import Label from './Label';
 interface URLInputProps extends InputHTMLAttributes<HTMLInputElement> {
   name: string;
-  control: Control<any>;
+  control: Control<FieldValues>;
   label?: string;
   required?: boolean;
 }

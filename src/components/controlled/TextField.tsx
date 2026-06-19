@@ -1,5 +1,5 @@
 import React from 'react';
-import { useController, type Control } from 'react-hook-form';
+import { useController, type Control, type FieldValues } from 'react-hook-form';
 import { Text_Field } from '../../constants/RegexPattern';
 import Label from './Label';
 import Error from './Error';
@@ -8,7 +8,7 @@ interface TextFieldProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   name: string;
   label?: string;
-  control: Control<any>;
+  control: Control<FieldValues>;
   required?: boolean;
   labelClassName?: string;
   inputClassName?: string;
