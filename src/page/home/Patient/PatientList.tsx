@@ -3,6 +3,7 @@ import { MdClose } from "react-icons/md";
 import Controltable, { type Column } from "../../../components/controlled/Controltable";
 import AddPatientForm from "./Addpatientform";
 
+// ── Type ───────────────────────────────────────────────────────────────────────
 
 type Patient = {
   id: string;
@@ -17,6 +18,7 @@ type Patient = {
   visits: number;
 };
 
+// ── Initial data ───────────────────────────────────────────────────────────────
 
 const initialPatients: Patient[] = [
   { id: "PI000234", uhid: "PI000234", name: "Ramesh Patil",  gender: "Male",   age: 45, mobile: "9876543210", city: "Pune",    lastVisit: "12/02/2026", status: "Active",   visits: 5 },
@@ -25,6 +27,8 @@ const initialPatients: Patient[] = [
   { id: "PI000237", uhid: "PI000237", name: "Priya Joshi",   gender: "Female", age: 28, mobile: "9870001234", city: "Pune",    lastVisit: "15/02/2026", status: "Inactive", visits: 1 },
   { id: "PI000238", uhid: "PI000238", name: "Ravi Kumar",    gender: "Male",   age: 60, mobile: "9765432100", city: "Solapur", lastVisit: "11/02/2026", status: "Critical", visits: 6 },
 ];
+
+// ── Badge helpers ──────────────────────────────────────────────────────────────
 
 const statusColors: Record<string, string> = {
   Active:   "bg-green-100 text-green-700",
@@ -37,10 +41,14 @@ const genderColors: Record<string, string> = {
   Female: "bg-pink-100 text-pink-700",
 };
 
+// ── UHID generator ─────────────────────────────────────────────────────────────
+
 const generateUhid = (patients: Patient[]) => {
   const last = patients[patients.length - 1]?.uhid ?? "PI000233";
   return `PI${String(parseInt(last.replace("PI", "")) + 1).padStart(6, "0")}`;
 };
+
+// ── Page ───────────────────────────────────────────────────────────────────────
 
 const Patient = () => {
   const [patients, setPatients]         = useState<Patient[]>(initialPatients);
@@ -49,9 +57,11 @@ const Patient = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [showAddForm, setShowAddForm]   = useState(false);
 
+  // Edit modal
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
   const [form, setForm]                     = useState<Patient | null>(null);
 
+  // ── Filter ────────────────────────────────────────────────────────────────
   const filtered = patients.filter((p) => {
     const matchSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -64,6 +74,7 @@ const Patient = () => {
     );
   });
 
+  // ── Edit handlers ─────────────────────────────────────────────────────────
   const handleEdit = (id: string | number) => {
     const patient = patients.find((p) => p.id === id);
     if (!patient) return;
@@ -87,18 +98,26 @@ const Patient = () => {
     setForm({ ...form, [field]: value });
   };
 
+  // ── Single delete ─────────────────────────────────────────────────────────
   const handleDelete = (id: string | number) => {
     setPatients((prev) => prev.filter((p) => p.id !== id));
   };
+
+  // ── Multiple delete ───────────────────────────────────────────────────────
   const handleDeleteMultiple = (ids: (string | number)[]) => {
     const idSet = new Set(ids);
     setPatients((prev) => prev.filter((p) => !idSet.has(p.id)));
   };
+
+  // ── Add patient ───────────────────────────────────────────────────────────
   const handleAddPatient = (newPatient: Omit<Patient, "id">) => {
     const nextUhid = generateUhid(patients);
     setPatients((prev) => [...prev, { ...newPatient, id: nextUhid, uhid: nextUhid }]);
   };
 
+  // ── Columns ───────────────────────────────────────────────────────────────
+  // Explicitly typed as Column<Patient>[] so "key" narrows to keyof Patient
+  // instead of widening to plain string.
   const columns: Column<Patient>[] = [
     { key: "uhid",      label: "UHID" },
     {
@@ -131,6 +150,7 @@ const Patient = () => {
   return (
     <div className="p-6">
 
+      {/* ── Add Patient Modal ────────────────────────────────────── */}
       {showAddForm && (
         <AddPatientForm
           onClose={() => setShowAddForm(false)}
@@ -139,6 +159,7 @@ const Patient = () => {
         />
       )}
 
+      {/* ── Edit Patient Modal ───────────────────────────────────── */}
       {editingPatient && form && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
@@ -257,7 +278,7 @@ const Patient = () => {
         onDeleteMultiple={handleDeleteMultiple}
         deleteMultipleLabel="Delete Selected"
 
-        addButtonLabel="Add Patient"
+        addButtonLabel="+ Add Patient"
         onAddClick={() => setShowAddForm(true)}
 
         searchValue={search}
