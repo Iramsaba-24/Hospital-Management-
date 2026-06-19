@@ -1,21 +1,26 @@
 import React from "react";
-import { useController, type Control, type FieldValues } from "react-hook-form";
+import {
+  useController,
+  type Control,
+  type FieldValues,
+  type Path,
+} from "react-hook-form";
 import Label from "./Label";
 import Error from "./Error";
 import { convertToDateInputFormat } from "../../utils/dateUtils";
- 
-interface BirthDateFieldProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
-  name: string;
+
+interface BirthDateFieldProps<TFieldValues extends FieldValues = FieldValues>
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "name"> {
+  name: Path<TFieldValues>;
   label?: string;
-  control: Control<FieldValues>;
+  control: Control<TFieldValues>;
   required?: boolean;
   showError?: boolean;
   errorMessage?: string;
   disabled?: boolean;
 }
- 
-const BirthDateField: React.FC<BirthDateFieldProps> = ({
+
+const BirthDateField = <TFieldValues extends FieldValues = FieldValues>({
   name,
   label,
   control,
@@ -24,16 +29,13 @@ const BirthDateField: React.FC<BirthDateFieldProps> = ({
   disabled = false,
   errorMessage = "Must be at least 3 years old",
   ...rest
-}) => {
+}: BirthDateFieldProps<TFieldValues>) => {
   const today = new Date().toISOString().split("T")[0];
- 
- 
- 
- 
+
   const minDate = new Date();
   minDate.setFullYear(minDate.getFullYear() - 3);
   const minDateString = minDate.toISOString().split("T")[0];
- 
+
   const {
     field,
     fieldState: { error },
@@ -48,15 +50,15 @@ const BirthDateField: React.FC<BirthDateFieldProps> = ({
       },
     },
   });
- 
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     field.onChange(e.target.value);
   };
- 
+
   return (
     <div className="mb-2">
       {label && <Label label={label} required={required} />}
- 
+
       <input
         {...field}
         {...rest}
@@ -75,5 +77,5 @@ const BirthDateField: React.FC<BirthDateFieldProps> = ({
     </div>
   );
 };
+
 export default BirthDateField;
- 

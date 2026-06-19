@@ -132,13 +132,12 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
 
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="px-6 pb-6 space-y-4">
-            {/* ── Personal Information ──────────────────────────────── */}
+
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Personal Information
               </h3>
 
-              {/* Row 1: UHID, Full Name, Guardian Name */}
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">UHID *</label>
@@ -154,7 +153,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="fullName"
                     label="Full Name"
                     required={true}
-                    control={control as any}
+                    control={control}
                     placeholder="Enter full name"
                   />
                 </div>
@@ -163,20 +162,19 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="guardianName"
                     label="Guardian Name"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="Enter guardian name"
                   />
                 </div>
               </div>
 
-              {/* Row 2: Gender, DOB, Blood Group, Marital Status, Photo */}
               <div className="grid grid-cols-5 gap-4">
                 <div>
                   <Dropdown
                     name="gender"
                     label="Gender"
                     required={true}
-                    control={control as any}
+                    control={control}
                     options={["Male", "Female", "Other"]}
                   />
                 </div>
@@ -185,7 +183,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="dob"
                     label="Date of Birth"
                     required={true}
-                    control={control as any}
+                    control={control}
                   />
                 </div>
                 <div>
@@ -193,7 +191,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="bloodGroup"
                     label="Blood Group"
                     required={false}
-                    control={control as any}
+                    control={control}
                     options={bloodGroupOptions}
                   />
                 </div>
@@ -202,11 +200,10 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="maritalStatus"
                     label="Marital Status"
                     required={false}
-                    control={control as any}
+                    control={control}
                     options={maritalStatusOptions}
                   />
                 </div>
-                {/* Photo upload */}
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">Patient Photo</label>
                   <label
@@ -227,7 +224,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
               </div>
             </div>
 
-            {/* ── Contact Information ───────────────────────────────── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Contact Information
@@ -238,7 +234,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="mobile"
                     label="Mobile Number"
                     required={true}
-                    control={control as any}
+                    control={control}
                     placeholder="10-digit number"
                   />
                 </div>
@@ -247,7 +243,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="email"
                     label="Email"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="example@email.com"
                   />
                 </div>
@@ -256,14 +252,13 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="address"
                     label="Address"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="Street, City"
                   />
                 </div>
               </div>
             </div>
 
-            {/* ── Medical Information ───────────────────────────────── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Medical Information
@@ -274,7 +269,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="allergies"
                     label="Known Allergies"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="e.g. Penicillin, Dust"
                   />
                 </div>
@@ -283,14 +278,13 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="remarks"
                     label="Remarks"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="Any notes"
                   />
                 </div>
               </div>
             </div>
 
-            {/* ── Insurance / TPA ───────────────────────────────────── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Insurance / TPA
@@ -301,7 +295,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="tpaProvider"
                     label="TPA Provider"
                     required={false}
-                    control={control as any}
+                    control={control}
                     options={tpaProviderOptions}
                   />
                 </div>
@@ -310,7 +304,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="tpaId"
                     label="TPA ID"
                     required={false}
-                    control={control as any}
+                    control={control}
                     placeholder="TPA card number"
                   />
                 </div>
@@ -319,13 +313,12 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="tpaValidity"
                     label="TPA Validity"
                     required={false}
-                    control={control as any}
+                    control={control}
                   />
                 </div>
               </div>
             </div>
 
-            {/* ── Identification ────────────────────────────────────── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Identification
@@ -336,12 +329,11 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     name="nationalId"
                     label="National ID / Aadhaar"
                     required={false}
-                    control={control as any}
+                    control={control}
                   />
                 </div>
               </div>
 
-              {/* Save button */}
               <div className="flex justify-end mt-5">
                 <button
                   type="submit"
