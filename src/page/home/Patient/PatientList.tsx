@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { MdClose } from "react-icons/md";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Controltable from "../../../components/controlled/Controltable";
 import AddPatientForm from "./Addpatientform";
 
@@ -90,6 +92,7 @@ const Patient = () => {
   const handleEditSave = () => {
     if (!form) return;
     setPatients((prev) => prev.map((p) => (p.id === form.id ? { ...form } : p)));
+    toast.success(`${form.name}'s details updated successfully.`);
     handleEditClose();
   };
 
@@ -100,19 +103,23 @@ const Patient = () => {
 
   // ── Single delete ─────────────────────────────────────────────────────────
   const handleDelete = (id: string | number) => {
+    const patient = patients.find((p) => p.id === id);
     setPatients((prev) => prev.filter((p) => p.id !== id));
+    toast.error(`${patient?.name ?? "Patient"} removed.`);
   };
 
   // ── Multiple delete ───────────────────────────────────────────────────────
   const handleDeleteMultiple = (ids: (string | number)[]) => {
     const idSet = new Set(ids);
     setPatients((prev) => prev.filter((p) => !idSet.has(p.id)));
+    toast.error(`${ids.length} patient${ids.length > 1 ? "s" : ""} removed.`);
   };
 
   // ── Add patient ───────────────────────────────────────────────────────────
   const handleAddPatient = (newPatient: Omit<Patient, "id">) => {
     const nextUhid = generateUhid(patients);
     setPatients((prev) => [...prev, { ...newPatient, id: nextUhid, uhid: nextUhid }]);
+    toast.success(`${newPatient.name} added successfully.`);
   };
 
   // ── Columns ───────────────────────────────────────────────────────────────
@@ -147,6 +154,18 @@ const Patient = () => {
 
   return (
     <div className="p-6">
+
+      {/* ── Toast Container ──────────────────────────────────────── */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="light"
+      />
 
       {/* ── Add Patient Modal ────────────────────────────────────── */}
       {showAddForm && (
@@ -270,7 +289,6 @@ const Patient = () => {
         columns={columns}
         data={filtered}
 
-    
         onEdit={handleEdit}
         onDelete={handleDelete}
 

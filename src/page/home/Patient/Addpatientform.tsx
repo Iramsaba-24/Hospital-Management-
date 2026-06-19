@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { MdClose, MdCloudUpload } from "react-icons/md";
+import { toast } from "react-toastify";
 import AadharField from "../../../components/controlled/AadharField";
 import BirthDateField from "../../../components/controlled/BirthDateField";
 import Dropdown from "../../../components/controlled/Dropdown";
@@ -96,7 +97,12 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
     };
 
     onSave(newPatient);
+    // Toast is fired from parent (Patient.tsx) after onSave completes
     onClose();
+  };
+
+  const onError = () => {
+    toast.error("Please fill in all required fields.");
   };
 
   const bloodGroupOptions = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
@@ -131,7 +137,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
         </div>
 
         <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="px-6 pb-6 space-y-4">
+          <form onSubmit={handleSubmit(onSubmit, onError)} className="px-6 pb-6 space-y-4">
             {/* ── Personal Information ──────────────────────────────── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
