@@ -1,18 +1,14 @@
 import { useState } from "react";
-import { MdArrowBack } from "react-icons/md";
+import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../../../../components/controlled/Button"; // Adjust this relative path according to your workspace directory setup
+import BackButton from "../../../../components/controlled/BackButton"; // Path configured alongside your controlled inputs setup
+import Overview from "./OverView"; // Adjust these relative paths according to your workspace directory setup
+import OPDHistory from "./OpdHistory";
+import IPDHistory from "./IPDHistory";
+import Pharmacy from "./PharmacyHistory";
+import Radiology from "./RadiologyHistory";
+import Billing from "./Bill";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-type VisitType = "OPD" | "IPD";
-
-interface TimelineEntry {
-  id: number;
-  type: VisitType;
-  title: string;
-  date: string;
-  subtitle: string;
-  amount: number;
-}
 
 interface PatientData {
   id: string;
@@ -27,6 +23,13 @@ interface PatientData {
   outstanding: number;
 }
 
+// Shape of the data this page expects to receive via react-router navigation
+// e.g. navigate("/patients/details", { state: { patientId: "PI000234", activeTab: "Billing" } })
+interface PatientDetailsLocationState {
+  patientId?: string;
+  activeTab?: string;
+}
+
 // ── Static Patient Data (shared with Patient list) ─────────────────────────────
 const allPatients: PatientData[] = [
   { id: "PI000234", name: "Ramesh Patil",   uhid: "UHD-000234", gender: "Male",   age: 45, bloodGroup: "B+", totalVisits: 24, opdVisits: 18, ipdAdmissions: 6, outstanding: 12450 },
@@ -36,18 +39,9 @@ const allPatients: PatientData[] = [
   { id: "PI000238", name: "Ravi Kumar",    uhid: "UHD-000238", gender: "Male",   age: 60, bloodGroup: "AB+",totalVisits: 20, opdVisits: 14, ipdAdmissions: 6, outstanding: 19800 },
 ];
 
-const timeline: TimelineEntry[] = [
-  { id: 1, type: "OPD", title: "OPD Visit",      date: "12 Feb 2026", subtitle: "Dr. Amit Singh • Viral Fever",      amount: 850   },
-  { id: 2, type: "IPD", title: "IPD Admission",   date: "05 Jan 2026", subtitle: "Dengue • 4 Days Stay • General Ward",       amount: 24500 },
-  { id: 3, type: "OPD", title: "OPD Visit",       date: "10 Dec 2025", subtitle: "Hypertension Follow-up",                    amount: 600   },
-];
 
-const tabs = ["Overview", "OPD History", "IPD History", "Pharmacy", "Lab", "Radiology", "Billing"];
+const tabs = ["Overview", "OPD History", "IPD History", "Pharmacy", "Radiology", "Billing"];
 
-const dotColor: Record<VisitType, string> = {
-  OPD: "bg-blue-500",
-  IPD: "bg-green-500",
-};
 
 const formatCurrency = (n: number) => "₹ " + n.toLocaleString("en-IN");
 
@@ -64,34 +58,83 @@ const fallbackPatient: PatientData = {
   outstanding: 0,
 };
 
+// patientId / onBack are now optional — kept for backward compatibility with
+// callers that still render this component directly and pass props. When the
+// component is reached via react-router navigation (e.g. navigate("/patients/details",
+// { state: { patientId } })) the values are read from location.state instead,
+// the same way Users.tsx reads `selectedTab` from location.state.
 interface PatientDetailsProps {
-  patientId: string;
-  onBack: () => void;
+  patientId?: string;
+  onBack?: () => void;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
-const PatientDetails = ({ patientId, onBack }: PatientDetailsProps) => {
-  const [activeTab, setActiveTab] = useState("Overview");
+const PatientDetails = ({ patientId: propPatientId, onBack }: PatientDetailsProps) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Pull patientId / activeTab from navigation state first, falling back to
+  // any props passed in directly (same precedence pattern Users.tsx uses for
+  // `selectedTab`).
+  const navState = location.state as PatientDetailsLocationState | null;
+  const patientId = navState?.patientId ?? propPatientId ?? "";
+
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    const tab = navState?.activeTab;
+    if (tab && tabs.includes(tab)) return tab;
+    return "Overview";
+  });
 
   const patient = allPatients.find((p) => p.id === patientId) ?? fallbackPatient;
+
+  // Same switch-based render pattern as Users.tsx's renderSelectedReport()
+  const renderSelectedTab = () => {
+    switch (activeTab) {
+      case "Overview":
+        return <Overview />;
+      case "OPD History":
+        return <OPDHistory />;
+      case "IPD History":
+        return <IPDHistory />;
+      case "Pharmacy":
+        return <Pharmacy />;
+      case "Radiology":
+        return <Radiology />;
+      case "Billing":
+        return <Billing />;
+      default:
+        return (
+          <div className="flex items-center justify-center h-40 text-gray-300 text-sm">
+            No data available for {activeTab}.
+          </div>
+        );
+    }
+  };
+
+  // If an onBack handler was passed in (legacy state-driven usage), use it.
+  // Otherwise fall back to real router navigation.
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+      return;
+    }
+    navigate(-1);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6 font-sans">
 
-      {/* ── Page header with back button ─────────────────────────── */}
+    
       <div className="flex items-center gap-3 mb-5">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-800 transition-colors cursor-pointer"
-        >
-          <MdArrowBack size={18} />
-          Back
-        </button>
-        <span className="text-gray-300">|</span>
-        <h1 className="text-xl font-bold text-gray-800">Patient Details</h1>
+        <BackButton 
+          onClick={handleBack} 
+          label="Back" 
+          showAlways={true} 
+          clr="#6b7280" 
+        />
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm p-6 max-w-3xl mx-auto">
+      <div className="W-full  mx-auto bg-white p-6 rounded-xl shadow-md">
 
         {/* ── Header ──────────────────────────────────────────────── */}
         <div className="flex items-start justify-between mb-6">
@@ -102,13 +145,11 @@ const PatientDetails = ({ patientId, onBack }: PatientDetailsProps) => {
             </p>
           </div>
           
-          {/* Replaced standard HTML buttons with your custom <Button /> Component */}
           <div className="flex gap-2">
             <Button
               name="Edit"
               type="button"
               loading={false}
-              clr="#3b82f6" // Tailwind's blue-500 hexadecimal color code value
               showAlways={true}
               onClick={() => alert("Edit action clicked")}
             />
@@ -116,7 +157,7 @@ const PatientDetails = ({ patientId, onBack }: PatientDetailsProps) => {
               name="Admit"
               type="button"
               loading={false}
-              clr="#22c55e" // Tailwind's green-500 hexadecimal color code value
+              clr="#22c55e" 
               showAlways={true}
               onClick={() => alert("Admit action clicked")}
             />
@@ -159,42 +200,8 @@ const PatientDetails = ({ patientId, onBack }: PatientDetailsProps) => {
           </nav>
         </div>
 
-        {/* ── Timeline (Overview tab) ──────────────────────────────── */}
-        {activeTab === "Overview" && (
-          <div className="relative pl-8">
-            <div className="absolute left-[11px] top-3 bottom-3 w-px bg-gray-200" />
-
-            <div className="flex flex-col gap-3">
-              {timeline.map((entry) => (
-                <div key={entry.id} className="relative">
-                  <span
-                    className={`absolute -left-8 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full border-2 border-white shadow ${dotColor[entry.type]}`}
-                  />
-
-                  <div className="bg-white border border-gray-200 rounded-xl px-5 py-4 flex items-center justify-between hover:shadow-sm transition-shadow">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800">
-                        {entry.title}{" "}
-                        <span className="font-normal text-gray-500">• {entry.date}</span>
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">{entry.subtitle}</p>
-                    </div>
-                    <p className="text-sm font-semibold text-gray-700 shrink-0 ml-4">
-                      {formatCurrency(entry.amount)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── Other tabs placeholder ───────────────────────────────── */}
-        {activeTab !== "Overview" && (
-          <div className="flex items-center justify-center h-40 text-gray-300 text-sm">
-            No data available for {activeTab}.
-          </div>
-        )}
+        {/* ── Tab Content ───────────────────────────────────────── */}
+        {renderSelectedTab()}
       </div>
     </div>
   );

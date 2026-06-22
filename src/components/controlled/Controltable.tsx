@@ -179,7 +179,7 @@ const Controltable = <T extends RowBase>({
       <div className="overflow-x-auto">
         <table className="w-full text-sm min-w-max">
           <thead>
-            <tr className="border-b border-gray-100 text-gray-500 text-left">
+            <tr className="border-b border-gray-400 text-gray-500 text-left">
 
               {/* Checkbox header — only if onDeleteMultiple is passed */}
               {showCheckboxes && (

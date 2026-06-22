@@ -99,7 +99,7 @@ const Button: React.FC<ButtonProps> = ({
           bg-blue-600 px-4 py-2 text-white rounded-md
           ${isButtonDisabled
             ? 'cursor-not-allowed opacity-60'
-            : 'cursor-pointer hover:shadow-lg hover:bg-slate-900'
+            : 'cursor-pointer hover:shadow-lg hover:bg-blue-700'
           }`}
       >
         {loading ? (

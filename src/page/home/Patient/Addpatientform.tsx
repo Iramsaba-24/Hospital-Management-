@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { MdClose, MdCloudUpload } from "react-icons/md";
 import AadharField from "../../../components/controlled/AadharField";
@@ -7,8 +7,9 @@ import Dropdown from "../../../components/controlled/Dropdown";
 import EmailField from "../../../components/controlled/EmailField";
 import MobileField from "../../../components/controlled/MobileField";
 import NameField from "../../../components/controlled/NameField";
+import Button from "../../../components/controlled/Button";
 
-type Patient = {
+type PatientData = {
   uhid: string;
   name: string;
   gender: string;
@@ -18,12 +19,24 @@ type Patient = {
   lastVisit: string;
   status: string;
   visits: number;
+  guardianName?: string;
+  dob?: string;
+  bloodGroup?: string;
+  maritalStatus?: string;
+  email?: string;
+  allergies?: string;
+  remarks?: string;
+  tpaProvider?: string;
+  tpaId?: string;
+  tpaValidity?: string;
+  nationalId?: string;
 };
 
 type Props = {
   onClose: () => void;
-  onSave: (patient: Patient) => void;
+  onSave: (patient: Omit<PatientData, "id">) => void;
   nextUhid: string;
+  initialData?: PatientData | null;
 };
 
 interface FormData {
@@ -33,7 +46,6 @@ interface FormData {
   dob: string;
   bloodGroup: string;
   maritalStatus: string;
-  photo: File | null;
   mobile: string;
   email: string;
   address: string;
@@ -45,8 +57,12 @@ interface FormData {
   nationalId: string;
 }
 
-const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
+const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [, setPhotoFile] = useState<File | null>(null); 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isEditMode = !!initialData;
 
   const methods = useForm<FormData>({
     defaultValues: {
@@ -56,7 +72,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
       dob: "",
       bloodGroup: "",
       maritalStatus: "",
-      photo: null,
       mobile: "",
       email: "",
       address: "",
@@ -69,60 +84,105 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
     },
   });
 
-  const { handleSubmit, setValue, control } = methods;
+  const { handleSubmit, control, register, reset } = methods;
 
+  // ✅ Populate fields safely from initialData without overwriting extended details with empty strings
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        fullName: initialData.name || "",
+        gender: initialData.gender || "",
+        mobile: initialData.mobile || "",
+        address: initialData.city || "",
+        guardianName: initialData.guardianName || "",
+        dob: initialData.dob || "",
+        bloodGroup: initialData.bloodGroup || "",
+        maritalStatus: initialData.maritalStatus || "",
+        email: initialData.email || "",
+        allergies: initialData.allergies || "",
+        remarks: initialData.remarks || "",
+        tpaProvider: initialData.tpaProvider || "",
+        tpaId: initialData.tpaId || "",
+        tpaValidity: initialData.tpaValidity || "",
+        nationalId: initialData.nationalId || "",
+      });
+    }
+  }, [initialData, reset]);
+
+  // Clean up Object URL allocations to keep system memory clear
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setValue("photo", file);
-    setPhotoPreview(URL.createObjectURL(file));
+    setPhotoFile(file);
+    setPhotoPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return URL.createObjectURL(file);
+    });
   };
 
-  const onSubmit = (data: FormData) => {
-    const today = new Date();
-    const birth = new Date(data.dob);
-    const age = today.getFullYear() - birth.getFullYear();
+  const onSubmit = async (data: FormData) => {
+    setIsSubmitting(true);
+    try {
+      const today = new Date();
+      let age = 0;
 
-    const newPatient: Patient = {
-      uhid: nextUhid,
-      name: data.fullName,
-      gender: data.gender,
-      age: age,
-      mobile: data.mobile,
-      city: data.address.split(",").pop()?.trim() || "—",
-      lastVisit: today.toLocaleDateString("en-GB").replace(/\//g, "/"),
-      status: "Active",
-      visits: 1,
-    };
+      if (data.dob) {
+        const birth = new Date(data.dob);
+        const yearDiff = today.getFullYear() - birth.getFullYear();
+        const notYetHadBirthday =
+          today.getMonth() < birth.getMonth() ||
+          (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+        age = notYetHadBirthday ? yearDiff - 1 : yearDiff;
+      } else if (isEditMode && initialData?.age) {
+        age = initialData.age;
+      }
 
-    onSave(newPatient);
-    onClose();
+      const compiledData: Omit<PatientData, "id"> = {
+        uhid: nextUhid,
+        name: data.fullName,
+        gender: data.gender,
+        age,
+        mobile: data.mobile,
+        city: data.address,
+        lastVisit: initialData?.lastVisit || today.toLocaleDateString("en-GB"),
+        status: initialData?.status || "Active",
+        visits: initialData?.visits ?? 1,
+        guardianName: data.guardianName,
+        dob: data.dob,
+        bloodGroup: data.bloodGroup,
+        maritalStatus: data.maritalStatus,
+        email: data.email,
+        allergies: data.allergies,
+        remarks: data.remarks,
+        tpaProvider: data.tpaProvider,
+        tpaId: data.tpaId,
+        tpaValidity: data.tpaValidity,
+        nationalId: data.nationalId,
+      };
+
+      onSave(compiledData);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const bloodGroupOptions = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
   const maritalStatusOptions = ["Single", "Married", "Divorced", "Widowed"];
-  const tpaProviderOptions = [
-    "Star Health",
-    "ICICI Lombard",
-    "HDFC Ergo",
-    "Bajaj Allianz",
-    "New India",
-  ];
+  const tpaProviderOptions = ["Star Health", "ICICI Lombard", "Bajaj Allianz", "HDFC Ergo", "New India Assurance"];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Blurred backdrop */}
-      <div
-        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Modal */}
       <div className="relative bg-gray-100 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 z-10 max-h-[90vh] overflow-y-auto">
-        {/* Title bar */}
         <div className="flex items-center justify-between px-6 pt-6 pb-2">
-          <h2 className="text-xl font-bold text-gray-800">Add New Patient</h2>
+          <h2 className="text-xl font-bold text-gray-800">
+            {isEditMode ? "Modify Patient Details" : "Add New Patient"}
+          </h2>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-200 transition-colors"
           >
@@ -133,11 +193,11 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="px-6 pb-6 space-y-4">
 
+            {/* ── Personal Information ── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Personal Information
               </h3>
-
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">UHID *</label>
@@ -182,7 +242,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                   <BirthDateField
                     name="dob"
                     label="Date of Birth"
-                    required={true}
+                    required={!isEditMode}
                     control={control}
                   />
                 </div>
@@ -211,7 +271,11 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                     style={{ minHeight: "66px" }}
                   >
                     {photoPreview ? (
-                      <img src={photoPreview} alt="preview" className="w-full h-16 object-cover rounded-lg" />
+                      <img
+                        src={photoPreview}
+                        alt="preview"
+                        className="w-full h-16 object-cover rounded-lg"
+                      />
                     ) : (
                       <span className="flex flex-col items-center gap-1 py-2 text-gray-400">
                         <MdCloudUpload size={18} />
@@ -224,6 +288,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
               </div>
             </div>
 
+            {/* ── Contact Information ── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Contact Information
@@ -259,32 +324,34 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
               </div>
             </div>
 
+            {/* ── Medical Information ── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Medical Information
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <NameField
-                    name="allergies"
-                    label="Known Allergies"
-                    required={false}
-                    control={control}
-                    placeholder="e.g. Penicillin, Dust"
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Known Allergies</label>
+                  <input
+                    type="text"
+                    {...register("allergies")}
+                    placeholder="e.g. Penicillin, Pollen"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <NameField
-                    name="remarks"
-                    label="Remarks"
-                    required={false}
-                    control={control}
-                    placeholder="Any notes"
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Remarks</label>
+                  <input
+                    type="text"
+                    {...register("remarks")}
+                    placeholder="Any additional notes"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
             </div>
 
+            {/* ── Insurance / TPA ── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Insurance / TPA
@@ -300,25 +367,26 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                   />
                 </div>
                 <div>
-                  <NameField
-                    name="tpaId"
-                    label="TPA ID"
-                    required={false}
-                    control={control}
-                    placeholder="TPA card number"
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">TPA ID</label>
+                  <input
+                    type="text"
+                    {...register("tpaId")}
+                    placeholder="Enter TPA ID"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <BirthDateField
-                    name="tpaValidity"
-                    label="TPA Validity"
-                    required={false}
-                    control={control}
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">TPA Validity</label>
+                  <input
+                    type="date"
+                    {...register("tpaValidity")}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
               </div>
             </div>
 
+            {/* ── Identification ── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Identification
@@ -327,21 +395,30 @@ const AddPatientForm = ({ onClose, onSave, nextUhid }: Props) => {
                 <div>
                   <AadharField
                     name="nationalId"
+                    control={control}
                     label="National ID / Aadhaar"
                     required={false}
-                    control={control}
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="flex justify-end mt-5">
-                <button
-                  type="submit"
-                  className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors"
-                >
-                  Save Patient
-                </button>
-              </div>
+            {/* ── Footer Actions ── */}
+            <div className="bg-white rounded-xl p-5 flex justify-end gap-3">
+              <Button
+                name="Cancel"
+                type="button"
+                clr="#64748b"
+                loading={false}
+                onClick={onClose}
+                showAlways={true}
+              />
+              <Button
+                name={isEditMode ? "Update" : "Save Patient"}
+                type="submit"
+                loading={isSubmitting}
+                showAlways={true}
+              />
             </div>
           </form>
         </FormProvider>

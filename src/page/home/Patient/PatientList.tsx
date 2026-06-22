@@ -1,17 +1,11 @@
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form"; 
-import { MdClose } from "react-icons/md";
+import { useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-// Shared Custom Component Imports
-import Button from "../../../components/controlled/Button"; 
-import TextField from "../../../components/controlled/TextField"; 
-import Controltable, { type Column } from "../../../components/controlled/Controltable"; // Imported Column type
+import Controltable, { type Column } from "../../../components/controlled/Controltable";
 import AddPatientForm from "./Addpatientform";
 import PatientDetails from "../Patient/PatientDetails/PatientDetails";
 
-// ── Types ──────────────────────────────────────────────────────────────────────
 type PatientData = {
   id: string;
   uhid: string;
@@ -25,7 +19,6 @@ type PatientData = {
   visits: number;
 };
 
-// ── Initial data ───────────────────────────────────────────────────────────────
 const initialPatients: PatientData[] = [
   { id: "PI000234", uhid: "PI000234", name: "Ramesh Patil",  gender: "Male",   age: 45, mobile: "9876543210", city: "Pune",    lastVisit: "12/02/2026", status: "Active",   visits: 5 },
   { id: "PI000235", uhid: "PI000235", name: "Sunita Sharma", gender: "Female", age: 32, mobile: "9123456789", city: "Mumbai",  lastVisit: "14/02/2026", status: "Critical", visits: 3 },
@@ -50,38 +43,17 @@ const generateUhid = (patients: PatientData[]) => {
   return `PI${String(parseInt(last.replace("PI", "")) + 1).padStart(6, "0")}`;
 };
 
-// ── Main Page Component ────────────────────────────────────────────────────────
 const Patient = () => {
+  // ✅ All hooks declared unconditionally at the top — fixes Rules of Hooks violation
   const [patients, setPatients]         = useState<PatientData[]>(initialPatients);
   const [search, setSearch]             = useState("");
   const [genderFilter, setGenderFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [showAddForm, setShowAddForm]   = useState(false);
-  const [isSaving, setIsSaving]         = useState(false); 
-
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [editingPatient, setEditingPatient] = useState<PatientData | null>(null);
 
-  // Initialize React Hook Form for Edit Modal inputs
-  const { control, handleSubmit, reset } = useForm<PatientData>();
-
-  // Sync form values whenever a different user item is loaded into the editor
-  useEffect(() => {
-    if (editingPatient) {
-      reset(editingPatient);
-    }
-  }, [editingPatient, reset]);
-
-  if (selectedPatientId !== null) {
-    return (
-      <PatientDetails
-        patientId={selectedPatientId}
-        onBack={() => setSelectedPatientId(null)}
-      />
-    );
-  }
-
-  // ── Filter Data ───────────────────────────────────────────────────────────
+  // ✅ Derived values and handlers are defined before any conditional return
   const filtered = patients.filter((p) => {
     const matchSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -94,57 +66,55 @@ const Patient = () => {
     );
   });
 
-  // ── Action Handlers ───────────────────────────────────────────────────────
   const handleEdit = (id: string | number) => {
     const patient = patients.find((p) => p.id === id);
-    if (!patient) return;
+    if (!patient) {
+      toast.error("Could not find that patient to edit.");
+      return;
+    }
     setEditingPatient(patient);
   };
 
-  const handleEditClose = () => {
+  const handleEditSave = (updatedData: Omit<PatientData, "id">) => {
+    setPatients((prev) =>
+      prev.map((p) =>
+        p.id === editingPatient?.id ? { ...p, ...updatedData, id: p.id } : p
+      )
+    );
+    toast.success(`${updatedData.name}'s details updated successfully.`);
     setEditingPatient(null);
-    reset();
-  };
-
-  const handleEditSave = (data: PatientData) => {
-    setIsSaving(true);
-    setTimeout(() => {
-      setPatients((prev) => prev.map((p) => (p.id === data.id ? { ...data } : p)));
-      toast.success(`${data.name}'s details updated successfully.`);
-      setIsSaving(false);
-      handleEditClose();
-    }, 400);
   };
 
   const handleDelete = (id: string | number) => {
+    const patient = patients.find((p) => p.id === id);
     setPatients((prev) => prev.filter((p) => p.id !== id));
+    if (patient) {
+      toast.success(`${patient.name} was removed from the patient list.`);
+    }
   };
 
   const handleDeleteMultiple = (ids: (string | number)[]) => {
+    if (ids.length === 0) {
+      toast.warn("Select at least one patient to delete.");
+      return;
+    }
     const idSet = new Set(ids);
     setPatients((prev) => prev.filter((p) => !idSet.has(p.id)));
+    toast.success(`${ids.length} patient${ids.length > 1 ? "s" : ""} deleted.`);
   };
 
   const handleAddPatient = (newPatient: Omit<PatientData, "id">) => {
     const nextUhid = generateUhid(patients);
     setPatients((prev) => [...prev, { ...newPatient, id: nextUhid, uhid: nextUhid }]);
+    toast.success(`${newPatient.name} added with UHID ${nextUhid}.`);
   };
 
-  // Fixed Column signature typing mismatch to line up precisely with Controltable definitions
   const columns: Column<PatientData>[] = [
     { key: "uhid", label: "UHID" },
     {
       key: "name",
       label: "Patient",
-      render: (v, row) => (
-        <button
-          type="button"
-          onClick={() => setSelectedPatientId(row.id)}
-          className="font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer bg-transparent border-none p-0 text-left"
-        >
-          {String(v)}
-        </button>
-      ),
+      render: (v) => <span className="font-semibold text-gray-800">{String(v)}</span>,
     },
     {
       key: "gender",
@@ -171,20 +141,20 @@ const Patient = () => {
     { key: "visits", label: "Visits" },
   ];
 
+  // ✅ Early conditional return is now AFTER all hooks and derived values — safe to do here
+  if (selectedPatientId !== null) {
+    return (
+      <PatientDetails
+        patientId={selectedPatientId}
+        onBack={() => setSelectedPatientId(null)}
+      />
+    );
+  }
+
   return (
     <div className="p-6">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        pauseOnHover
-        draggable
-        theme="light"
-      />
+      <ToastContainer position="top-right" autoClose={3000} theme="light" />
 
-      {/* ── Add Patient Modal ── */}
       {showAddForm && (
         <AddPatientForm
           onClose={() => setShowAddForm(false)}
@@ -193,123 +163,21 @@ const Patient = () => {
         />
       )}
 
-      {/* ── Edit Patient Modal ── */}
       {editingPatient && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={handleEditClose} />
-          
-          <form 
-            onSubmit={handleSubmit(handleEditSave)} 
-            className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6 z-10"
-          >
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-bold text-gray-800">Edit Patient</h3>
-              <button
-                type="button"
-                onClick={handleEditClose}
-                className="text-gray-400 hover:text-gray-600 p-1 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-              >
-                <MdClose size={20} />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-              <div className="col-span-2">
-                <TextField
-                  name="name"
-                  label="Full Name"
-                  control={control}
-                  required
-                />
-              </div>
-              
-              <div>
-                <label className="text-xs font-medium text-gray-500 mb-1 block">Gender</label>
-                <select
-                  {...control.register("gender")}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-700 bg-white"
-                >
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </div>
-
-              <div>
-                <TextField
-                  name="age"
-                  label="Age"
-                  type="number"
-                  control={control}
-                  required
-                />
-              </div>
-
-              <div>
-                <TextField
-                  name="mobile"
-                  label="Mobile"
-                  control={control}
-                  required
-                />
-              </div>
-
-              <div>
-                <TextField
-                  name="city"
-                  label="City"
-                  control={control}
-                  required
-                />
-              </div>
-
-              <div className="col-span-2">
-                <TextField
-                  name="lastVisit"
-                  label="Last Visit"
-                  control={control}
-                  required
-                />
-              </div>
-
-              <div className="col-span-2 mt-1">
-                <label className="text-xs font-medium text-gray-500 mb-1 block">Status</label>
-                <select
-                  {...control.register("status")}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-700 bg-white"
-                >
-                  <option value="Active">Active</option>
-                  <option value="Critical">Critical</option>
-                  <option value="Inactive">Inactive</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                type="button"
-                onClick={handleEditClose}
-                className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              
-              <Button
-                name="Save Changes"
-                type="submit"
-                loading={isSaving}
-                showAlways={true}
-              />
-            </div>
-          </form>
-        </div>
+        <AddPatientForm
+          onClose={() => setEditingPatient(null)}
+          onSave={handleEditSave}
+          nextUhid={editingPatient.uhid}
+          initialData={editingPatient}
+        />
       )}
 
-      {/* Explicitly passing <PatientData> generic constraints down to cleanly align with columns data values */}
       <Controltable<PatientData>
         title="Patient List"
         totalLabel={`${patients.length} Patients`}
         columns={columns}
         data={filtered}
+        onRowClick={(row) => setSelectedPatientId(row.id)}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onDeleteMultiple={handleDeleteMultiple}
@@ -324,7 +192,7 @@ const Patient = () => {
             <select
               value={genderFilter}
               onChange={(e) => setGenderFilter(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600 bg-white cursor-pointer"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 bg-white"
             >
               <option value="All">Gender</option>
               <option value="Male">Male</option>
@@ -333,7 +201,7 @@ const Patient = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400 text-gray-600 bg-white cursor-pointer"
+              className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 bg-white"
             >
               <option value="All">Status</option>
               <option value="Active">Active</option>
