@@ -86,7 +86,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
 
   const { handleSubmit, control, register, reset } = methods;
 
-  // ✅ Populate fields safely from initialData without overwriting extended details with empty strings
   useEffect(() => {
     if (initialData) {
       reset({
@@ -109,7 +108,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
     }
   }, [initialData, reset]);
 
-  // Clean up Object URL allocations to keep system memory clear
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -200,7 +198,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
               </h3>
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">UHID *</label>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">UHID </label>
                   <input
                     type="text"
                     value={nextUhid}
@@ -288,7 +286,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
               </div>
             </div>
 
-            {/* ── Contact Information ── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Contact Information
@@ -351,10 +348,9 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
               </div>
             </div>
 
-            {/* ── Insurance / TPA ── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
-                Insurance / TPA
+                Insurance/TPA
               </h3>
               <div className="grid grid-cols-3 gap-4">
                 <div>
@@ -386,7 +382,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
               </div>
             </div>
 
-            {/* ── Identification ── */}
             <div className="bg-white rounded-xl p-5">
               <h3 className="text-sm font-semibold text-gray-700 mb-4 border-b border-gray-100 pb-2">
                 Identification
@@ -403,7 +398,6 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
               </div>
             </div>
 
-            {/* ── Footer Actions ── */}
             <div className="bg-white rounded-xl p-5 flex justify-end gap-3">
               <Button
                 name="Cancel"

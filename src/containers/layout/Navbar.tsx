@@ -16,13 +16,13 @@ const Navbar = ({ onToggleSidebar }: Props) => {
         <MdMenu size={22} />
       </button>
 
-      <span className="text-blue-600 font-bold text-lg whitespace-nowrap">
+      <span className="text-blue-600 font-bold text-base md:text-lg whitespace-nowrap">
         SmartHosp
       </span>
 
-      {/* Search — centered */}
+      {/* Search bar — mobile वर hidden */}
       <div className="flex-1 flex justify-center">
-        <div className="flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2 w-72">
+        <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2 w-72">
           <MdSearch size={18} className="text-gray-400" />
           <input
             type="text"
@@ -32,25 +32,31 @@ const Navbar = ({ onToggleSidebar }: Props) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+
+        <button className="md:hidden text-gray-500 hover:text-gray-700">
+          <MdSearch size={22} />
+        </button>
+
         <button className="relative text-gray-500 hover:text-gray-700">
           <MdNotifications size={22} />
           <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
             3
           </span>
         </button>
+
+        {/* Admin */}
         <div className="flex items-center gap-2">
           <MdAccountCircle size={32} className="text-gray-400" />
-          <div className="text-sm">
+          <div className="hidden md:block text-sm">
             <p className="font-medium text-gray-800">Admin</p>
             <p className="text-gray-400 text-xs">Administrator</p>
           </div>
         </div>
-      </div>
 
+      </div>
     </div>
   );
 };
 
 export default Navbar;
- 

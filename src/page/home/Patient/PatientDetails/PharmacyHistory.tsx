@@ -49,28 +49,24 @@ const pharmacyBills: PharmacyBill[] = [
 ];
 
 const statusClass = {
-  Paid: "bg-green-100 text-green-700",
-  Due: "bg-orange-100 text-orange-700",
+  Paid:    "bg-green-100 text-green-700",
+  Due:     "bg-orange-100 text-orange-700",
   Partial: "bg-amber-100 text-amber-700",
 };
 
 export default function PharmacyHistory() {
   const columns: Column<PharmacyBill>[] = [
-    { key: "billNo", label: "Bill No" },
-    { key: "date", label: "Date" },
-    { key: "doctor", label: "Doctor" },
+    { key: "billNo",    label: "Bill No"    },
+    { key: "date",      label: "Date"       },
+    { key: "doctor",    label: "Doctor"     },
     { key: "netAmount", label: "Net Amount" },
-    { key: "paid", label: "Paid" },
-    { key: "balance", label: "Balance" },
+    { key: "paid",      label: "Paid"       },
+    { key: "balance",   label: "Balance"    },
     {
       key: "status",
       label: "Status",
       render: (value) => (
-        <span
-          className={`px-3 py-1 rounded-md text-sm font-medium ${
-            statusClass[value as Status]
-          }`}
-        >
+        <span className={`px-2 py-1 rounded-md text-xs md:text-sm font-medium ${statusClass[value as Status]}`}>
           {String(value)}
         </span>
       ),
@@ -78,28 +74,29 @@ export default function PharmacyHistory() {
   ];
 
   const totalSpend = pharmacyBills.reduce(
-    (sum, bill) =>
-      sum + Number(bill.netAmount.replace(/[₹,\s]/g, "")),
+    (sum, bill) => sum + Number(bill.netAmount.replace(/[₹,\s]/g, "")),
     0
   );
 
   return (
-    <div className="bg-white rounded-lg p-4">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">Pharmacy History</h2>
+    <div className="bg-white rounded-lg p-3 md:p-4">
 
-        <div className="text-sm text-gray-600 mt-1">
-          Total Bills: {pharmacyBills.length} | Total Spend: ₹{" "}
-          {totalSpend.toFixed(2)}
+      <div className="mb-3 md:mb-4">
+        <h2 className="text-lg md:text-xl font-semibold">Pharmacy History</h2>
+        <div className="text-xs md:text-sm text-gray-600 mt-1">
+          Total Bills: {pharmacyBills.length} | Total Spend: ₹ {totalSpend.toFixed(2)}
         </div>
       </div>
 
-      <Controltable<PharmacyBill>
-        title=""
-        columns={columns}
-        data={pharmacyBills}
-        itemsPerPage={10}
-      />
+      <div className="overflow-x-auto">
+        <Controltable<PharmacyBill>
+          title=""
+          columns={columns}
+          data={pharmacyBills}
+          itemsPerPage={10}
+        />
+      </div>
+
     </div>
   );
 }
