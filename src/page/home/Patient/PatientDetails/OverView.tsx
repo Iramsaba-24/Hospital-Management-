@@ -49,17 +49,19 @@ const currency = new Intl.NumberFormat("en-IN", {
 
 export default function Overview() {
   return (
-    <div className="relative pl-8">
-      <div className="absolute left-3 top-3 bottom-3 w-px bg-gray-200" />
+    <div className="relative pl-6 md:pl-8">
+      {/* Vertical line */}
+      <div className="absolute left-2 md:left-3 top-3 bottom-3 w-px bg-gray-200" />
 
       <div className="space-y-3">
         {timeline.map((item) => (
           <div key={item.id} className="relative">
             <span
-              className={`absolute -left-8 top-1/2 -translate-y-1/2 h-3.5 w-3.5 rounded-full border-2 border-white shadow ${dotColor[item.type]}`}
+              className={`absolute -left-6 md:-left-8 top-1/2 -translate-y-1/2 h-3 w-3 md:h-3.5 md:w-3.5 rounded-full border-2 border-white shadow ${dotColor[item.type]}`}
             />
 
-            <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4 hover:shadow-sm">
+          
+            <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between rounded-xl border border-gray-200 bg-white p-3 md:p-4 hover:shadow-sm">
               <div>
                 <h3 className="text-sm font-semibold text-gray-800">
                   {item.title}
@@ -67,13 +69,10 @@ export default function Overview() {
                     • {item.date}
                   </span>
                 </h3>
-
-                <p className="mt-1 text-xs text-gray-500">
-                  {item.subtitle}
-                </p>
+                <p className="mt-1 text-xs text-gray-500">{item.subtitle}</p>
               </div>
 
-              <span className="ml-4 text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold text-gray-700 md:ml-4">
                 {currency.format(item.amount)}
               </span>
             </div>

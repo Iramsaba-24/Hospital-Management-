@@ -3,8 +3,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Controltable, { type Column } from "../../../components/controlled/Controltable";
-import AddPatientForm from "./Addpatientform";
 import PatientDetails from "../Patient/PatientDetails/PatientDetails";
+import AddPatientForm from "./Addpatientform";
 
 type PatientData = {
   id: string;
@@ -44,7 +44,7 @@ const generateUhid = (patients: PatientData[]) => {
 };
 
 const Patient = () => {
-  // ✅ All hooks declared unconditionally at the top — fixes Rules of Hooks violation
+
   const [patients, setPatients]         = useState<PatientData[]>(initialPatients);
   const [search, setSearch]             = useState("");
   const [genderFilter, setGenderFilter] = useState("All");
@@ -53,7 +53,7 @@ const Patient = () => {
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [editingPatient, setEditingPatient] = useState<PatientData | null>(null);
 
-  // ✅ Derived values and handlers are defined before any conditional return
+
   const filtered = patients.filter((p) => {
     const matchSearch =
       p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -141,7 +141,6 @@ const Patient = () => {
     { key: "visits", label: "Visits" },
   ];
 
-  // ✅ Early conditional return is now AFTER all hooks and derived values — safe to do here
   if (selectedPatientId !== null) {
     return (
       <PatientDetails
@@ -152,7 +151,7 @@ const Patient = () => {
   }
 
   return (
-    <div className="p-6">
+   <div className="p-3 md:p-6">
       <ToastContainer position="top-right" autoClose={3000} theme="light" />
 
       {showAddForm && (
@@ -182,7 +181,7 @@ const Patient = () => {
         onDelete={handleDelete}
         onDeleteMultiple={handleDeleteMultiple}
         deleteMultipleLabel="Delete Selected"
-        addButtonLabel="+ Add Patient"
+        addButtonLabel="Add Patient"
         onAddClick={() => setShowAddForm(true)}
         searchValue={search}
         onSearchChange={setSearch}

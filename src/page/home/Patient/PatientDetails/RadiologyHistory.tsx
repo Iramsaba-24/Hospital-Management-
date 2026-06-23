@@ -58,65 +58,65 @@ function InvoiceModal({
 }) {
   return (
     <div
-      className="fixed inset-0 bg-blend-color-burn bg-opacity-40 backdrop-blur-sm flex justify-center items-center z-50 p-4"
+      className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex justify-center items-center z-50 p-3 md:p-4"
       onClick={onClose}
     >
       <div
-        className="bg-white w-full max-w-2xl rounded-lg shadow-xl p-8 relative"
+        className="bg-white w-full max-w-2xl rounded-lg shadow-xl p-5 md:p-8 relative overflow-y-auto max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl leading-none"
+          className="absolute top-3 right-3 md:top-4 md:right-4 text-gray-400 hover:text-gray-700 text-xl leading-none"
           aria-label="Close"
         >
           ×
         </button>
 
         {/* Header */}
-        <h1 className="text-2xl font-bold text-gray-900">{HOSPITAL_INFO.name}</h1>
+        <h1 className="text-lg md:text-2xl font-bold text-gray-900">{HOSPITAL_INFO.name}</h1>
         <p className="text-xs text-gray-500 mt-1">GSTIN: {HOSPITAL_INFO.gstin}</p>
         <p className="text-xs text-gray-500">{HOSPITAL_INFO.address}</p>
 
-        <hr className="my-4 border-gray-400" />
+        <hr className="my-3 md:my-4 border-gray-400" />
 
-        {/* Invoice meta */}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div>
             <p className="font-bold text-sm tracking-wide">RADIOLOGY TAX INVOICE</p>
             <p className="text-sm mt-3">Patient: {bill.patientName}</p>
             <p className="text-sm">Visit ID: {bill.visitId}</p>
             <p className="text-sm">Doctor: {bill.doctorName}</p>
           </div>
-          <div className="text-right text-sm">
+          <div className="text-sm md:text-right">
             <p>Invoice No: {bill.billNo}</p>
             <p>Date: {bill.date}</p>
           </div>
         </div>
 
-        <hr className="my-4 border-gray-400" />
+        <hr className="my-3 md:my-4 border-gray-400" />
 
         {/* Service table */}
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left font-semibold">
-              <th className="pb-2">Service</th>
-              <th className="pb-2">SAC</th>
-              <th className="pb-2">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="py-1">{bill.radiologyType}</td>
-              <td className="py-1">{bill.sacCode}</td>
-              <td className="py-1">{bill.gross}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left font-semibold">
+                <th className="pb-2">Service</th>
+                <th className="pb-2">SAC</th>
+                <th className="pb-2">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td className="py-1">{bill.radiologyType}</td>
+                <td className="py-1">{bill.sacCode}</td>
+                <td className="py-1">{bill.gross}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-        {/* Totals */}
         <div className="flex justify-end mt-4">
-          <div className="text-sm space-y-1 w-48">
+          <div className="text-sm space-y-1 w-40 md:w-48">
             <div className="flex justify-between">
               <span>CGST 9%</span>
               <span>{bill.cgst}</span>
@@ -132,14 +132,16 @@ function InvoiceModal({
           </div>
         </div>
 
-        <hr className="my-4 border-gray-400" />
+        <hr className="my-3 md:my-4 border-gray-400" />
 
         <p className="text-sm">Payment Mode: {bill.paymentMethod}</p>
         <p className="text-sm">Insurance: {bill.insurance}</p>
 
-        <hr className="my-4 border-gray-400" />
+        <hr className="my-3 md:my-4 border-gray-400" />
 
-        <p className="text-xs italic text-gray-500">This is a system generated invoice.</p>
+        <p className="text-xs italic text-gray-500">
+          This is a system generated invoice.
+        </p>
       </div>
     </div>
   );
@@ -154,14 +156,13 @@ export default function RadiologyHistory() {
   };
 
   const columns: Column<RadiologyBill>[] = [
-    { key: "billNo", label: "Bill No" },
-    { key: "visitId", label: "Visit ID" },
+    { key: "billNo",        label: "Bill No"        },
+    { key: "visitId",       label: "Visit ID"       },
     { key: "radiologyType", label: "Radiology Type" },
-    { key: "date", label: "Date" },
-    { key: "gross", label: "Gross" },
-    { key: "cgst", label: "CGST (9%)" },
-    { key: "sgst", label: "SGST (9%)" },
-
+    { key: "date",          label: "Date"           },
+    { key: "gross",         label: "Gross"          },
+    { key: "cgst",          label: "CGST (9%)"      },
+    { key: "sgst",          label: "SGST (9%)"      },
     {
       key: "net",
       label: "Net Amount",
@@ -169,9 +170,7 @@ export default function RadiologyHistory() {
         <span className="font-semibold text-gray-900">{String(value)}</span>
       ),
     },
-
     { key: "paid", label: "Paid" },
-
     {
       key: "balance",
       label: "Balance",
@@ -179,7 +178,6 @@ export default function RadiologyHistory() {
         <span className="text-red-500 font-medium">{String(value)}</span>
       ),
     },
-
     {
       key: "paymentMethod",
       label: "Payment",
@@ -187,7 +185,6 @@ export default function RadiologyHistory() {
         <span className="text-green-600 font-medium">{String(value)}</span>
       ),
     },
-
     {
       key: "insurance",
       label: "Insurance",
@@ -205,27 +202,29 @@ export default function RadiologyHistory() {
   );
 
   return (
-    <div className="bg-white rounded-lg p-4">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold">Radiology History</h2>
+    <div className="bg-white rounded-lg p-3 md:p-4">
 
-        <div className="text-sm text-gray-600 mt-1">
-          Total Bills: {radiologyBills.length} | Outstanding: ₹
-          {totalOutstanding.toFixed(2)}
+      <div className="mb-3 md:mb-4">
+        <h2 className="text-lg md:text-xl font-semibold">Radiology History</h2>
+        <div className="text-xs md:text-sm text-gray-600 mt-1">
+          Total Bills: {radiologyBills.length} | Outstanding: ₹ {totalOutstanding.toFixed(2)}
         </div>
       </div>
 
-      <Controltable<RadiologyBill>
-        title=""
-        columns={columns}
-        data={radiologyBills}
-        itemsPerPage={10}
-        onView={handleView}
-      />
+      <div className="overflow-x-auto">
+        <Controltable<RadiologyBill>
+          title=""
+          columns={columns}
+          data={radiologyBills}
+          itemsPerPage={10}
+          onView={handleView}
+        />
+      </div>
 
       {selectedBill && (
         <InvoiceModal bill={selectedBill} onClose={() => setSelectedBill(null)} />
       )}
+
     </div>
   );
 }
