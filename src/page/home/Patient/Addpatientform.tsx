@@ -207,7 +207,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
                     name="uhid"
                     label="UHID"
                     control={control}
-                    disabled={true}
+                    disabled={false}
                     inputClassName="bg-gray-50 text-gray-400 cursor-not-allowed border-gray-200 text-sm rounded-lg px-3 py-2"
                   />
                 </div>
