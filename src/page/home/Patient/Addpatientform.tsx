@@ -8,6 +8,7 @@ import EmailField from "../../../components/controlled/EmailField";
 import MobileField from "../../../components/controlled/MobileField";
 import NameField from "../../../components/controlled/NameField";
 import Button from "../../../components/controlled/Button";
+import TextField from "../../../components/controlled/TextField";
 
 type PatientData = {
   uhid: string;
@@ -40,6 +41,7 @@ type Props = {
 };
 
 interface FormData {
+  uhid: string;
   fullName: string;
   guardianName: string;
   gender: string;
@@ -59,13 +61,14 @@ interface FormData {
 
 const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [, setPhotoFile] = useState<File | null>(null); 
+  const [, setPhotoFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isEditMode = !!initialData;
 
   const methods = useForm<FormData>({
     defaultValues: {
+      uhid: nextUhid, // ✅ ADDED
       fullName: "",
       guardianName: "",
       gender: "",
@@ -89,6 +92,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
   useEffect(() => {
     if (initialData) {
       reset({
+        uhid: nextUhid, // ✅ ADDED
         fullName: initialData.name || "",
         gender: initialData.gender || "",
         mobile: initialData.mobile || "",
@@ -106,7 +110,7 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
         nationalId: initialData.nationalId || "",
       });
     }
-  }, [initialData, reset]);
+  }, [initialData, nextUhid, reset]);
 
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -197,15 +201,17 @@ const AddPatientForm = ({ onClose, onSave, nextUhid, initialData }: Props) => {
                 Personal Information
               </h3>
               <div className="grid grid-cols-3 gap-4 mb-4">
+
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">UHID </label>
-                  <input
-                    type="text"
-                    value={nextUhid}
-                    disabled
-                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-400 cursor-not-allowed"
+                  <TextField
+                    name="uhid"
+                    label="UHID"
+                    control={control}
+                    disabled={true}
+                    inputClassName="bg-gray-50 text-gray-400 cursor-not-allowed border-gray-200 text-sm rounded-lg px-3 py-2"
                   />
                 </div>
+
                 <div>
                   <NameField
                     name="fullName"
