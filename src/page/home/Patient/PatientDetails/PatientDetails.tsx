@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Button from "../../../../components/controlled/Button";
 import BackButton from "../../../../components/controlled/BackButton";
 import Overview from "./OverView";
 import OPDHistory from "./OpdHistory";
@@ -101,10 +100,10 @@ const PatientDetails = ({ patientId: propPatientId, onBack }: PatientDetailsProp
             </p>
           </div>
 
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <Button name="Edit"  type="button" loading={false} showAlways={true} onClick={() => alert("Edit action clicked")} />
             <Button name="Admit" type="button" loading={false} clr="#22c55e" showAlways={true} onClick={() => alert("Admit action clicked")} />
-          </div>
+          </div> */}
         </div>
 
         {/* Stats — mobile 2 cols, desktop 4 cols */}
