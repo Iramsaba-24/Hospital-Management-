@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
   UserPlus, 
@@ -121,6 +121,7 @@ export default function StaffDirectory() {
   });
 
   // Watch values directly from forms to handle instant or submit-driven reactive filtering
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedRole = roleForm.watch('roleSearch');
   const watchedKeyword = keywordForm.watch('keywordSearch');
 

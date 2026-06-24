@@ -17,7 +17,7 @@ const MainRouting = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/patient" element={<Patient />} />
-       <Route path="/staff" element={<StaffDirectory />} />
+       <Route path="/all-staff" element={<StaffDirectory />} />
       </Routes>
     </Suspense>
   );
