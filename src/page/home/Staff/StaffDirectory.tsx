@@ -1,17 +1,11 @@
-import React, { useMemo } from 'react';
+import { CalendarCheck, CreditCard, Eye, LogOut, Pencil, UserPlus } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { 
-  UserPlus, 
-  CalendarCheck, 
-  CreditCard, 
-  LogOut, 
-  Pencil, 
-  Eye 
-} from 'lucide-react';
-import Button from '../../../components/controlled/Button'; 
-import NameField from '../../../components/controlled/NameField'; // Import your NameField component
+import Button from '../../../components/controlled/Button';
+import NameField from '../../../components/controlled/NameField';
+import AddStaffForm from '../Staff/Addstaffform';
 
-// --- Interfaces ---
+
 interface StaffMember {
   id: string;
   name: string;
@@ -25,7 +19,6 @@ interface StaffMember {
   };
 }
 
-// Form values interfaces for react-hook-form
 interface RoleFormValues {
   roleSearch: string;
 }
@@ -34,139 +27,113 @@ interface KeywordFormValues {
   keywordSearch: string;
 }
 
-// --- Mock Data ---
+
+interface SavedStaffData {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  role: string;
+  photo: File | null;
+}
+
 const INITIAL_STAFF: StaffMember[] = [
-  {
-    id: '1',
-    name: 'John Hook',
-    phone: '9686576776',
-    role: 'Super Admin',
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-400' }
-  },
-  {
-    id: '2',
-    name: 'Reyan Jain',
-    phone: '852963741',
-    role: 'Doctor',
-    image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-blue-50', text: 'text-blue-500', border: 'border-blue-400' }
-  },
-  {
-    id: '3',
-    name: 'Harry Grant',
-    phone: '852963741',
-    role: 'Pharmacist',
-    image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-purple-50', text: 'text-purple-500', border: 'border-purple-400' }
-  },
-  {
-    id: '4',
-    name: 'Natasha Romanoff',
-    phone: '9686576776',
-    role: 'Nurse',
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-cyan-50', text: 'text-cyan-500', border: 'border-cyan-400' }
-  },
-  {
-    id: '5',
-    name: 'Jason Abbot',
-    phone: '852963741',
-    role: 'Admin',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-yellow-50', text: 'text-yellow-600', border: 'border-yellow-400' }
-  },
-  {
-    id: '6',
-    name: 'Maria Ford',
-    phone: '852963741',
-    role: 'Receptionist',
-    image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-pink-50', text: 'text-pink-500', border: 'border-pink-400' }
-  },
-  {
-    id: '7',
-    name: 'Brad Frost',
-    phone: '5454464644',
-    role: 'Accountant',
-    image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-orange-50', text: 'text-orange-500', border: 'border-orange-400' }
-  },
-  {
-    id: '8',
-    name: 'April Clinton',
-    phone: '852963741',
-    role: 'Radiologist',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-400' }
-  },
-  {
-    id: '9',
-    name: 'Belina Turner',
-    phone: '6465465465',
-    role: 'Pathology',
-    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-400' }
-  }
+  { id: '1', name: 'John Hook',        phone: '9686576776', role: 'Super Admin',  image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-green-50',  text: 'text-green-600',  border: 'border-green-400'  } },
+  { id: '2', name: 'Reyan Jain',       phone: '852963741',  role: 'Doctor',       image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-blue-50',   text: 'text-blue-500',   border: 'border-blue-400'   } },
+  { id: '3', name: 'Harry Grant',      phone: '852963741',  role: 'Pharmacist',   image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-purple-50', text: 'text-purple-500', border: 'border-purple-400' } },
+  { id: '4', name: 'Natasha Romanoff', phone: '9686576776', role: 'Nurse',        image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-cyan-50',   text: 'text-cyan-500',   border: 'border-cyan-400'   } },
+  { id: '5', name: 'Jason Abbot',      phone: '852963741',  role: 'Admin',        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-yellow-50', text: 'text-yellow-600', border: 'border-yellow-400' } },
+  { id: '6', name: 'Maria Ford',       phone: '852963741',  role: 'Receptionist', image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-pink-50',   text: 'text-pink-500',   border: 'border-pink-400'   } },
+  { id: '7', name: 'Brad Frost',       phone: '5454464644', role: 'Accountant',   image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-orange-50', text: 'text-orange-500', border: 'border-orange-400' } },
+  { id: '8', name: 'April Clinton',    phone: '852963741',  role: 'Radiologist',  image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-400' } },
+  { id: '9', name: 'Belina Turner',    phone: '6465465465', role: 'Pathology',    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-slate-50',  text: 'text-slate-500',  border: 'border-slate-400'  } },
 ];
 
+const FallbackAvatar = ({ name }: { name: string }) => (
+  <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600 text-2xl font-bold">
+    {name.charAt(0).toUpperCase()}
+  </div>
+);
+
+const generateStaffId = (staff: StaffMember[]) => {
+  const lastId = parseInt(staff[staff.length - 1]?.id ?? "0") + 1;
+  return String(lastId).padStart(4, "0");
+};
+
 export default function StaffDirectory() {
-  // Setup forms using react-hook-form
-  const roleForm = useForm<RoleFormValues>({
-    defaultValues: { roleSearch: '' }
-  });
+  const [staffList, setStaffList] = useState<StaffMember[]>(INITIAL_STAFF);
+  const [showAddForm, setShowAddForm] = useState(false);
 
-  const keywordForm = useForm<KeywordFormValues>({
-    defaultValues: { keywordSearch: '' }
-  });
+  const roleForm    = useForm<RoleFormValues>({ defaultValues: { roleSearch: '' } });
+  const keywordForm = useForm<KeywordFormValues>({ defaultValues: { keywordSearch: '' } });
 
-  // Watch values directly from forms to handle instant or submit-driven reactive filtering
-  const watchedRole = roleForm.watch('roleSearch');
+  
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const watchedRole    = roleForm.watch('roleSearch');
   const watchedKeyword = keywordForm.watch('keywordSearch');
 
-  // Filter Logic based on watched reactive state variables
   const filteredStaff = useMemo(() => {
-    return INITIAL_STAFF.filter((member) => {
-      const matchesRole = watchedRole 
-        ? member.role.toLowerCase().includes(watchedRole.trim().toLowerCase()) 
-        : true;
-      const matchesKeyword = watchedKeyword 
-        ? member.name.toLowerCase().includes(watchedKeyword.trim().toLowerCase()) || member.phone.includes(watchedKeyword.trim())
-        : true;
-      
+    return staffList.filter((member) => {
+      const matchesRole    = watchedRole    ? member.role.toLowerCase().includes(watchedRole.trim().toLowerCase())    : true;
+      const matchesKeyword = watchedKeyword ? member.name.toLowerCase().includes(watchedKeyword.trim().toLowerCase()) || member.phone.includes(watchedKeyword.trim()) : true;
       return matchesRole && matchesKeyword;
     });
-  }, [watchedRole, watchedKeyword]);
+  }, [watchedRole, watchedKeyword, staffList]);
 
-  // Handle mock execution workflows if needed
-  const onRoleSearchSubmit = (data: RoleFormValues) => {
-    console.log('Role Searched:', data.roleSearch);
+  const handleSaveStaff = (data: SavedStaffData) => {
+    const nextId = generateStaffId(staffList);
+
+    const imageUrl = data.photo instanceof File
+      ? URL.createObjectURL(data.photo)
+      : "";
+
+    const newMember: StaffMember = {
+      id:    nextId,
+      name:  `${data.firstName} ${data.lastName}`.trim(),
+      phone: data.phone,
+      role:  data.role,
+      image: imageUrl,
+      roleColor: { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-400' },
+    };
+
+    setStaffList((prev) => [...prev, newMember]);
   };
 
-  const onKeywordSearchSubmit = (data: KeywordFormValues) => {
-    console.log('Keyword Searched:', data.keywordSearch);
-  };
+  const onRoleSearchSubmit    = () => {};
+  const onKeywordSearchSubmit = () => {};
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] p-8 font-sans antialiased text-gray-800">
+
+      {showAddForm && (
+        <AddStaffForm
+          onClose={() => setShowAddForm(false)}
+          onSave={handleSaveStaff}
+          nextStaffId={generateStaffId(staffList)}
+        />
+      )}
+
       <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-sm p-8 min-h-[85vh]">
-        
-        {/* --- HEADER SECTION --- */}
+
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">Staff Directory</h1>
-          
+
           <div className="flex flex-wrap gap-2 items-center">
-            <Button name="Add staff" loading={false} type="button" clr="#0088ff" icon={<UserPlus size={16} />} showAlways={true} />
-            <Button name="staff Attendance" loading={false} type="button" clr="#0088ff" icon={<CalendarCheck size={16} />} showAlways={true} />
-            <Button name="Payroll" loading={false} type="button" clr="#0088ff" icon={<CreditCard size={16} />} showAlways={true} />
-            <Button name="leave" loading={false} type="button" clr="#0088ff" icon={<LogOut size={16} />} showAlways={true} />
+            <Button
+              name="Add staff"
+              loading={false}
+              type="button"
+              clr="#0088ff"
+              icon={<UserPlus size={16} />}
+              showAlways={true}
+              onClick={() => setShowAddForm(true)}
+            />
+            <Button name="Staff Attendance" loading={false} type="button" clr="#0088ff" icon={<CalendarCheck size={16} />} showAlways={true} />
+            <Button name="Payroll"          loading={false} type="button" clr="#0088ff" icon={<CreditCard size={16} />}    showAlways={true} />
+            <Button name="Leave"            loading={false} type="button" clr="#0088ff" icon={<LogOut size={16} />}        showAlways={true} />
           </div>
         </div>
 
-        {/* --- FILTERS SECTION --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-5xl">
-          
-          {/* Form 1: Role Filter via NameField Component */}
           <form onSubmit={roleForm.handleSubmit(onRoleSearchSubmit)} className="flex items-end gap-4 w-full">
             <div className="flex-1">
               <NameField<RoleFormValues>
@@ -180,7 +147,6 @@ export default function StaffDirectory() {
             <Button name="search" loading={false} type="submit" clr="#0088ff" showAlways={true} />
           </form>
 
-          {/* Form 2: Keyword Filter via NameField Component */}
           <form onSubmit={keywordForm.handleSubmit(onKeywordSearchSubmit)} className="flex items-end gap-4 w-full">
             <div className="flex-1">
               <NameField<KeywordFormValues>
@@ -193,15 +159,13 @@ export default function StaffDirectory() {
             </div>
             <Button name="search" loading={false} type="submit" clr="#0088ff" showAlways={true} />
           </form>
-
         </div>
 
-        {/* --- GRID STAFF CARDS --- */}
         {filteredStaff.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStaff.map((member) => (
-              <div 
-                key={member.id} 
+              <div
+                key={member.id}
                 className="relative bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] p-5 flex gap-5 items-center hover:shadow-[0_6px_24px_rgba(0,0,0,0.08)] transition-shadow"
               >
                 {/* Action Icons */}
@@ -214,25 +178,21 @@ export default function StaffDirectory() {
                   </button>
                 </div>
 
-                {/* Profile Image */}
-                <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-100">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="w-full h-full object-cover object-top"
-                  />
+                <div className="w-20 h-20 rounded-full overflow-hidden shrink-0 bg-gray-100 border border-gray-100">
+                  {member.image ? (
+                    <img
+                      src={member.image}
+                      alt={member.name}
+                      className="w-full h-full object-cover object-top"
+                    />
+                  ) : (
+                    <FallbackAvatar name={member.name} />
+                  )}
                 </div>
 
-                {/* Profile Details */}
                 <div className="flex flex-col items-start space-y-1">
-                  <h3 className="text-lg font-semibold text-gray-900 leading-tight">
-                    {member.name}
-                  </h3>
-                  <p className="text-xs text-gray-400 font-medium tracking-wide">
-                    {member.phone}
-                  </p>
-                  
-                  {/* Micro-badge */}
+                  <h3 className="text-lg font-semibold text-gray-900 leading-tight">{member.name}</h3>
+                  <p className="text-xs text-gray-400 font-medium tracking-wide">{member.phone}</p>
                   <span className={`mt-2 px-2.5 py-0.5 text-[10px] font-semibold border rounded-md tracking-wide uppercase ${member.roleColor.bg} ${member.roleColor.text} ${member.roleColor.border}`}>
                     {member.role}
                   </span>

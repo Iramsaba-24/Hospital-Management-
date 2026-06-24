@@ -17,7 +17,7 @@ const NameField = <T extends FieldValues>({
 }: NameFieldProps<T>) => {
   return (
     <div>
-      <label className="text-xs font-medium text-gray-500 mb-1 block">
+      <label className="w-full mx-auto mb-2 font-semibold">
         {label} {required && "*"}
       </label>
       <Controller

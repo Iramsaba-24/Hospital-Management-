@@ -1,5 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import StaffDirectory from "../page/home/Staff/StaffDirectory";
 
 const Dashboard = lazy(() => import("../page/home/Dashboard"));
@@ -17,7 +17,7 @@ const MainRouting = () => {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/patient" element={<Patient />} />
-       <Route path="/staff" element={<StaffDirectory />} />
+       <Route path="all-staff" element={<StaffDirectory />} />
       </Routes>
     </Suspense>
   );

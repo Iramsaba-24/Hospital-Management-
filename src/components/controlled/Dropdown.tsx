@@ -26,7 +26,7 @@ const Dropdown = <T extends FieldValues>({
   options = [],
 }: DropdownProps<T>) => {
   return (
-    <div className="w-full mx-auto mb-2">
+    <div className="w-full mx-auto mb-2 ">
       <Label label={label} required={required} />
 
       <Controller
