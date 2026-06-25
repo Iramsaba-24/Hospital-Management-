@@ -1,16 +1,17 @@
 /* eslint-disable react-hooks/incompatible-library */
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
   UserPlus, 
   CalendarCheck, 
   CreditCard, 
-  LogOut 
+  LogOut, 
+  Search
 } from 'lucide-react';
 import Button from '../../../components/controlled/Button'; 
 import NameField from '../../../components/controlled/NameField'; 
-import StaffCard from './StaffCard'; // Importing the child component
-import { FaSearch } from 'react-icons/fa';
+import StaffCard from './StaffCard';
+import AddStaffForm from '../Staff/Addstaffform'; // ← Import AddStaffForm
 
 // --- Interfaces ---
 interface StaffMember {
@@ -33,6 +34,23 @@ interface RoleFormValues {
 interface KeywordFormValues {
   keywordSearch: string;
 }
+
+// Role color map used when adding a new staff member
+const ROLE_COLOR_MAP: Record<string, StaffMember['roleColor']> = {
+  'Super Admin':  { bg: 'bg-green-50',  text: 'text-green-600',  border: 'border-green-400'  },
+  'Doctor':       { bg: 'bg-blue-50',   text: 'text-blue-500',   border: 'border-blue-400'   },
+  'Pharmacist':   { bg: 'bg-purple-50', text: 'text-purple-500', border: 'border-purple-400' },
+  'Nurse':        { bg: 'bg-cyan-50',   text: 'text-cyan-500',   border: 'border-cyan-400'   },
+  'Admin':        { bg: 'bg-yellow-50', text: 'text-yellow-600', border: 'border-yellow-400' },
+  'Receptionist': { bg: 'bg-pink-50',   text: 'text-pink-500',   border: 'border-pink-400'   },
+  'Accountant':   { bg: 'bg-orange-50', text: 'text-orange-500', border: 'border-orange-400' },
+  'Radiologist':  { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-400' },
+  'Pathologist':  { bg: 'bg-slate-50',  text: 'text-slate-500',  border: 'border-slate-400'  },
+};
+
+const DEFAULT_ROLE_COLOR: StaffMember['roleColor'] = {
+  bg: 'bg-gray-50', text: 'text-gray-500', border: 'border-gray-400',
+};
 
 // --- Mock Data ---
 const INITIAL_STAFF: StaffMember[] = [
@@ -111,6 +129,31 @@ const INITIAL_STAFF: StaffMember[] = [
 ];
 
 export default function StaffDirectory() {
+  // ── Modal state (mirrors how Users.tsx drives child views) ──────────────
+  const [isAddFormOpen, setIsAddFormOpen] = useState(false);
+  const [staffList, setStaffList] = useState<StaffMember[]>(INITIAL_STAFF);
+
+  // Auto-generate the next staff ID based on current list length
+  const nextStaffId = `STF-${String(staffList.length + 1).padStart(3, '0')}`;
+
+  // Handler called by AddStaffForm on Save — mirrors onSave pattern
+  const handleSaveStaff = (data: { firstName: string; lastName: string; phone: string; role: string; photo: File | null }) => {
+    const newMember: StaffMember = {
+      id: String(staffList.length + 1),
+      name: `${data.firstName} ${data.lastName}`.trim(),
+      phone: data.phone,
+      role: data.role,
+      image: data.photo
+        ? URL.createObjectURL(data.photo)
+        : `https://ui-avatars.com/api/?name=${encodeURIComponent(
+            `${data.firstName} ${data.lastName}`
+          )}&background=random&size=150`,
+      roleColor: ROLE_COLOR_MAP[data.role] ?? DEFAULT_ROLE_COLOR,
+    };
+    setStaffList((prev) => [...prev, newMember]);
+  };
+
+  // ── Search / filter forms ───────────────────────────────────────────────
   const roleForm = useForm<RoleFormValues>({
     defaultValues: { roleSearch: '' }
   });
@@ -123,17 +166,17 @@ export default function StaffDirectory() {
   const watchedKeyword = keywordForm.watch('keywordSearch');
 
   const filteredStaff = useMemo(() => {
-    return INITIAL_STAFF.filter((member) => {
-      const matchesRole = watchedRole 
-        ? member.role.toLowerCase().includes(watchedRole.trim().toLowerCase()) 
+    return staffList.filter((member) => {
+      const matchesRole = watchedRole
+        ? member.role.toLowerCase().includes(watchedRole.trim().toLowerCase())
         : true;
-      const matchesKeyword = watchedKeyword 
-        ? member.name.toLowerCase().includes(watchedKeyword.trim().toLowerCase()) || member.phone.includes(watchedKeyword.trim())
+      const matchesKeyword = watchedKeyword
+        ? member.name.toLowerCase().includes(watchedKeyword.trim().toLowerCase()) ||
+          member.phone.includes(watchedKeyword.trim())
         : true;
-      
       return matchesRole && matchesKeyword;
     });
-  }, [watchedRole, watchedKeyword]);
+  }, [watchedRole, watchedKeyword, staffList]);
 
   const onRoleSearchSubmit = (data: RoleFormValues) => {
     console.log('Role Searched:', data.roleSearch);
@@ -146,22 +189,31 @@ export default function StaffDirectory() {
   return (
     <div className="min-h-screen bg-[#f4f6f9] p-8 font-sans antialiased text-gray-800">
       <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-sm p-8 min-h-[85vh]">
-        
+
         {/* --- HEADER SECTION --- */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">Staff Directory</h1>
-          
+
           <div className="flex flex-wrap gap-2 items-center">
-            <Button name="Add staff" loading={false} type="button" clr="#0088ff" icon={<UserPlus size={16} />} showAlways={true} />
+            {/* ← onClick opens the AddStaffForm modal, same pattern as Users tab buttons */}
+            <Button
+              name="Add staff"
+              loading={false}
+              type="button"
+              clr="#0088ff"
+              icon={<UserPlus size={16} />}
+              showAlways={true}
+              onClick={() => setIsAddFormOpen(true)}
+            />
             <Button name="staff Attendance" loading={false} type="button" clr="#0088ff" icon={<CalendarCheck size={16} />} showAlways={true} />
-            <Button name="Payroll" loading={false} type="button" clr="#0088ff" icon={<CreditCard size={16} />} showAlways={true} />
-            <Button name="leave" loading={false} type="button" clr="#0088ff" icon={<LogOut size={16} />} showAlways={true} />
+            <Button name="Payroll"          loading={false} type="button" clr="#0088ff" icon={<CreditCard size={16} />}    showAlways={true} />
+            <Button name="leave"            loading={false} type="button" clr="#0088ff" icon={<LogOut size={16} />}        showAlways={true} />
           </div>
         </div>
 
         {/* --- FILTERS SECTION --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-5xl">
-          
+
           <form onSubmit={roleForm.handleSubmit(onRoleSearchSubmit)} className="flex items-end gap-4 w-full">
             <div className="flex-1">
               <NameField<RoleFormValues>
@@ -172,7 +224,7 @@ export default function StaffDirectory() {
                 required={false}
               />
             </div>
-            <Button name="search" loading={false} type="submit" icon={<FaSearch size={16} />} showAlways={true} />
+            <Button name="search" loading={false} type="submit" icon={<Search size={16} />} showAlways={true} />
           </form>
 
           <form onSubmit={keywordForm.handleSubmit(onKeywordSearchSubmit)} className="flex items-end gap-4 w-full">
@@ -185,7 +237,7 @@ export default function StaffDirectory() {
                 required={false}
               />
             </div>
-            <Button name="search" loading={false} type="submit" icon={<FaSearch size={16} />} showAlways={true} />
+            <Button name="search" loading={false} type="submit" icon={<Search size={16} />} showAlways={true} />
           </form>
 
         </div>
@@ -204,6 +256,15 @@ export default function StaffDirectory() {
         )}
 
       </div>
+
+      {/* --- ADD STAFF MODAL — rendered conditionally, same pattern as Users child views --- */}
+      {isAddFormOpen && (
+        <AddStaffForm
+          onClose={() => setIsAddFormOpen(false)}
+          onSave={handleSaveStaff}
+          nextStaffId={nextStaffId}
+        />
+      )}
     </div>
   );
 }

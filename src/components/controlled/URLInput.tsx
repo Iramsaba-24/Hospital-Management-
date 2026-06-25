@@ -1,27 +1,34 @@
-import React, {type InputHTMLAttributes } from 'react';
-import { Controller,type Control, type FieldValues } from 'react-hook-form';
+import { type InputHTMLAttributes } from 'react';
+import {
+  Controller,
+  type Control,
+  type FieldValues,
+  type Path,
+} from 'react-hook-form';
 import { FiLink } from 'react-icons/fi';
-import { URL_REGEX } from '../../constants/RegexPattern'; 
+import { URL_REGEX } from '../../constants/RegexPattern';
 import Error from './Error';
 import Label from './Label';
-interface URLInputProps extends InputHTMLAttributes<HTMLInputElement> {
-  name: string;
-  control: Control<FieldValues>;
+
+interface URLInputProps<TFieldValues extends FieldValues = FieldValues>
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'name'> {
+  name: Path<TFieldValues>;
+  control: Control<TFieldValues>;
   label?: string;
   required?: boolean;
 }
 
-const URLInput: React.FC<URLInputProps> = ({
+const URLInput = <TFieldValues extends FieldValues = FieldValues>({
   name,
   control,
   label = 'URL',
   required = false,
   placeholder = 'https://example.com',
   ...rest
-}) => {
+}: URLInputProps<TFieldValues>) => {
   return (
     <div className="mb-4">
-          {label && (
+      {label && (
         <Label label={label} required={required} labelClassName="mb-1" />
       )}
       <Controller
@@ -50,9 +57,7 @@ const URLInput: React.FC<URLInputProps> = ({
                 }`}
               />
             </div>
-          {error && (
-             <Error error={error}/>
-            )}
+            {error && <Error error={error} />}
           </>
         )}
       />
