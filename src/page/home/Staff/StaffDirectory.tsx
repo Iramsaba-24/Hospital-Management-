@@ -1,15 +1,16 @@
+/* eslint-disable react-hooks/incompatible-library */
 import { useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
   UserPlus, 
   CalendarCheck, 
   CreditCard, 
-  LogOut, 
-  Pencil, 
-  Eye 
+  LogOut 
 } from 'lucide-react';
 import Button from '../../../components/controlled/Button'; 
-import NameField from '../../../components/controlled/NameField'; // Import your NameField component
+import NameField from '../../../components/controlled/NameField'; 
+import StaffCard from './StaffCard'; // Importing the child component
+import { FaSearch } from 'react-icons/fa';
 
 // --- Interfaces ---
 interface StaffMember {
@@ -25,7 +26,6 @@ interface StaffMember {
   };
 }
 
-// Form values interfaces for react-hook-form
 interface RoleFormValues {
   roleSearch: string;
 }
@@ -111,7 +111,6 @@ const INITIAL_STAFF: StaffMember[] = [
 ];
 
 export default function StaffDirectory() {
-  // Setup forms using react-hook-form
   const roleForm = useForm<RoleFormValues>({
     defaultValues: { roleSearch: '' }
   });
@@ -120,12 +119,9 @@ export default function StaffDirectory() {
     defaultValues: { keywordSearch: '' }
   });
 
-  // Watch values directly from forms to handle instant or submit-driven reactive filtering
-  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedRole = roleForm.watch('roleSearch');
   const watchedKeyword = keywordForm.watch('keywordSearch');
 
-  // Filter Logic based on watched reactive state variables
   const filteredStaff = useMemo(() => {
     return INITIAL_STAFF.filter((member) => {
       const matchesRole = watchedRole 
@@ -139,7 +135,6 @@ export default function StaffDirectory() {
     });
   }, [watchedRole, watchedKeyword]);
 
-  // Handle mock execution workflows if needed
   const onRoleSearchSubmit = (data: RoleFormValues) => {
     console.log('Role Searched:', data.roleSearch);
   };
@@ -167,7 +162,6 @@ export default function StaffDirectory() {
         {/* --- FILTERS SECTION --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-5xl">
           
-          {/* Form 1: Role Filter via NameField Component */}
           <form onSubmit={roleForm.handleSubmit(onRoleSearchSubmit)} className="flex items-end gap-4 w-full">
             <div className="flex-1">
               <NameField<RoleFormValues>
@@ -178,10 +172,9 @@ export default function StaffDirectory() {
                 required={false}
               />
             </div>
-            <Button name="search" loading={false} type="submit" clr="#0088ff" showAlways={true} />
+            <Button name="search" loading={false} type="submit" icon={<FaSearch size={16} />} showAlways={true} />
           </form>
 
-          {/* Form 2: Keyword Filter via NameField Component */}
           <form onSubmit={keywordForm.handleSubmit(onKeywordSearchSubmit)} className="flex items-end gap-4 w-full">
             <div className="flex-1">
               <NameField<KeywordFormValues>
@@ -192,7 +185,7 @@ export default function StaffDirectory() {
                 required={false}
               />
             </div>
-            <Button name="search" loading={false} type="submit" clr="#0088ff" showAlways={true} />
+            <Button name="search" loading={false} type="submit" icon={<FaSearch size={16} />} showAlways={true} />
           </form>
 
         </div>
@@ -201,44 +194,7 @@ export default function StaffDirectory() {
         {filteredStaff.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStaff.map((member) => (
-              <div 
-                key={member.id} 
-                className="relative bg-white rounded-2xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.05)] p-5 flex gap-5 items-center hover:shadow-[0_6px_24px_rgba(0,0,0,0.08)] transition-shadow"
-              >
-                {/* Action Icons */}
-                <div className="absolute top-4 right-4 flex gap-1.5 text-blue-400">
-                  <button className="hover:text-blue-600 transition-colors" title="Edit Profile">
-                    <Pencil size={13} />
-                  </button>
-                  <button className="hover:text-blue-600 transition-colors" title="View Profile">
-                    <Eye size={14} />
-                  </button>
-                </div>
-
-                {/* Profile Image */}
-                <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0 bg-gray-100 border border-gray-100">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="w-full h-full object-cover object-top"
-                  />
-                </div>
-
-                {/* Profile Details */}
-                <div className="flex flex-col items-start space-y-1">
-                  <h3 className="text-lg font-semibold text-gray-900 leading-tight">
-                    {member.name}
-                  </h3>
-                  <p className="text-xs text-gray-400 font-medium tracking-wide">
-                    {member.phone}
-                  </p>
-                  
-                  {/* Micro-badge */}
-                  <span className={`mt-2 px-2.5 py-0.5 text-[10px] font-semibold border rounded-md tracking-wide uppercase ${member.roleColor.bg} ${member.roleColor.text} ${member.roleColor.border}`}>
-                    {member.role}
-                  </span>
-                </div>
-              </div>
+              <StaffCard key={member.id} member={member} />
             ))}
           </div>
         ) : (
