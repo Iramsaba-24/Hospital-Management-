@@ -269,7 +269,6 @@ export default function StaffDirectory() {
           </div>
         </div>
 
-        {/* --- FILTERS SECTION --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-5xl">
           <form
             onSubmit={roleForm.handleSubmit(onRoleSearchSubmit)}

@@ -1,25 +1,29 @@
 import React from "react";
-import { Controller, type Control, type FieldValues } from "react-hook-form";
+import {
+  Controller,
+  type Control,
+  type FieldValues,
+  type Path,
+} from "react-hook-form";
 import Label from "../controlled/Label";
 import Error from "./Error";
 import { convertToDateInputFormat } from "../../utils/dateUtils";
 
-
-type DateFieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
-  name: string;
-  label?: string;
-  control: Control<FieldValues>;
-  required?: boolean;
-  disabled?: boolean;
-  onlyToday?: boolean;
-};
-
+type DateFieldProps<TFieldValues extends FieldValues = FieldValues> =
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, "name"> & {
+    name: Path<TFieldValues>;
+    label?: string;
+    control: Control<TFieldValues>;
+    required?: boolean;
+    disabled?: boolean;
+    onlyToday?: boolean;
+  };
 
 const getTodayDate = (): string => {
   return new Date().toISOString().split("T")[0];
 };
 
-const DateField: React.FC<DateFieldProps> = ({
+const DateField = <TFieldValues extends FieldValues = FieldValues>({
   name,
   label,
   control,
@@ -27,7 +31,7 @@ const DateField: React.FC<DateFieldProps> = ({
   disabled = false,
   onlyToday = false,
   ...rest
-}) => {
+}: DateFieldProps<TFieldValues>) => {
   const today = getTodayDate();
 
   return (
@@ -37,15 +41,13 @@ const DateField: React.FC<DateFieldProps> = ({
       <Controller
         name={name}
         control={control}
-        defaultValue={today}
+        defaultValue={today as never}
         rules={{
           required: required ? "Date is required" : false,
         }}
         render={({ field, fieldState: { error } }) => {
-          
-
           const displayValue = field.value
-            ? convertToDateInputFormat(field.value)
+            ? convertToDateInputFormat(field.value as string)
             : today;
 
           return (
@@ -63,12 +65,9 @@ const DateField: React.FC<DateFieldProps> = ({
                 className={`mt-1 block w-full px-4 py-2 border ${
                   error ? "border-red-500" : "border-gray-300"
                 } rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  disabled
-                    ? "bg-gray-100 cursor-not-allowed opacity-70"
-                    : ""
+                  disabled ? "bg-gray-100 cursor-not-allowed opacity-70" : ""
                 }`}
               />
-
               {error && <Error error={error} />}
             </>
           );
