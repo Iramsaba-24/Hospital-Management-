@@ -282,7 +282,7 @@ const AddStaffForm = ({ onClose, onSave, nextStaffId }: Props) => {
                   required
                   control={control}
                 />
-                <DateField<StaffFormData>
+                <DateField
                   name="dateOfJoining"
                   label="Date of Joining"
                   control={control}
