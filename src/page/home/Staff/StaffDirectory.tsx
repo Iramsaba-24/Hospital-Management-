@@ -11,7 +11,7 @@ import {
 import Button from '../../../components/controlled/Button'; 
 import NameField from '../../../components/controlled/NameField'; 
 import StaffCard from './StaffCard';
-import AddStaffForm from '../Staff/Addstaffform'; // ← Import AddStaffForm
+import AddStaffForm from '../Staff/Addstaffform';
 
 // --- Interfaces ---
 interface StaffMember {
@@ -211,7 +211,6 @@ export default function StaffDirectory() {
           </div>
         </div>
 
-        {/* --- FILTERS SECTION --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-5xl">
 
           <form onSubmit={roleForm.handleSubmit(onRoleSearchSubmit)} className="flex items-end gap-4 w-full">

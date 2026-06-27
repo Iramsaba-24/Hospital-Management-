@@ -2,19 +2,17 @@ import { FormProvider, useForm } from "react-hook-form";
 import { MdClose } from "react-icons/md";
 import AadharField from "../../../components/controlled/AadharField";
 import BirthDateField from "../../../components/controlled/BirthDateField";
+import DateField from "../../../components/controlled/DateField";
 import Dropdown from "../../../components/controlled/Dropdown";
 import EmailField from "../../../components/controlled/EmailField";
 import FileUploadField from "../../../components/controlled/FileUploadField";
-// import MobileField from "../../../components/controlled/MobileField";
 import NameField from "../../../components/controlled/NameField";
 import NumberField from "../../../components/controlled/NumberField";
+import PhoneNumberField from "../../../components/controlled/PhoneNumberField";
 import TextField from "../../../components/controlled/TextField";
 import URLInput from "../../../components/controlled/URLInput";
-// import DateField from "../../../components/controlled/DateField";
-import PhoneNumberField from "../../../components/controlled/PhoneNumberField";
 
 interface StaffFormData {
-  // Basic Information
   staffId: string;
   role: string;
   designation: string;
@@ -42,27 +40,23 @@ interface StaffFormData {
   panNumber: string;
   nationalId: string;
   localId: string;
-  // Payroll
   epfNo: string;
   contractType: string;
   basicSalary: string;
   workShift: string;
   workLocation: string;
   dateOfLeaving: string;
-  // Leaves
   casualLeave: string;
   privilegeLeave: string;
   sickLeave: string;
   maternityLeave: string;
   paternityLeave: string;
   feverLeave: string;
-  // Bank Account
   accountTitle: string;
   bankAccountNumber: string;
   bankName: string;
   ifscCode: string;
   bankBranchName: string;
-  // Social Media
   facebookUrl: string;
   twitterUrl: string;
   linkedinUrl: string;
@@ -170,15 +164,12 @@ const AddStaffForm = ({ onClose, onSave, nextStaffId }: Props) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Modal */}
       <div className="relative bg-gray-100 rounded-2xl shadow-2xl w-full max-w-4xl mx-4 z-10 max-h-[90vh] overflow-y-auto">
-        {/* Title bar */}
         <div className="flex items-center justify-between px-6 pt-6 pb-2">
           <h2 className="text-xl font-bold text-gray-800">Add New Staff</h2>
           <button
@@ -291,18 +282,17 @@ const AddStaffForm = ({ onClose, onSave, nextStaffId }: Props) => {
                   required
                   control={control}
                 />
-                {/* <BirthDateField
+                <DateField<StaffFormData>
                   name="dateOfJoining"
                   label="Date of Joining"
                   control={control}
-                /> */}
+                />
                 <PhoneNumberField
                   name="phone"
                   label="Phone"
                   required
                   placeholder="Enter phone number"
                 />
-
                 <PhoneNumberField
                   name="emergencyContact"
                   label="Emergency Contact"
