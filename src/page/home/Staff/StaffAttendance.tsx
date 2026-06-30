@@ -3,6 +3,11 @@ import { useForm } from "react-hook-form";
 import Dropdown from "../../../components/controlled/Dropdown";
 import DateField from "../../../components/controlled/DateField";
 import Controltable, { type Column } from "../../../components/controlled/Controltable";
+import Button from "../../../components/controlled/Button";
+// Importing your newly created components
+import TimeField from "../../../components/controlled/TimeField"; 
+import TextareaField from "../../../components/controlled/TextareaField"; 
+import { SaveIcon, SearchIcon } from "lucide-react";
 
 // --- Typings ---
 type FormValues = {
@@ -24,9 +29,6 @@ interface StaffRow {
   note: string;
 }
 
-// BUG FIX 5: StaffAttendance was defined as React.FC with no props, but StaffDirectory
-// was passing onClose and onSave props to it — causing a TypeScript error.
-// Added a proper Props interface so the component accepts and uses those callbacks.
 interface StaffAttendanceProps {
   onClose: () => void;
   onSave: (attendanceData: StaffRow[]) => void;
@@ -62,13 +64,6 @@ const ROLE_OPTIONS = [
   { label: "Admin", value: "Admin" },
   { label: "Teacher", value: "Teacher" },
   { label: "Accountant", value: "Accountant" },
-  // BUG FIX 6: The ROLE_OPTIONS here only had Admin/Teacher/Accountant, but
-  // MOCK_STAFF_DATA rows only use "Admin". If user selects Teacher or Accountant,
-  // the search returns empty and hasSearched shows an empty table — with no feedback
-  // that data simply doesn't exist for those roles. Added a comment; the real fix
-  // is to ensure MOCK_STAFF_DATA covers all listed roles OR remove roles with no data.
-  // For now the options remain, but in production these should be dynamically populated
-  // from actual staff data.
 ];
 
 const ATTENDANCE_STATUSES: AttendanceStatus[] = [
@@ -80,18 +75,15 @@ const ATTENDANCE_STATUSES: AttendanceStatus[] = [
   "Second Shift",
 ];
 
-// BUG FIX 5 (continued): Accept and use onClose / onSave props
 const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) => {
   const [hasSearched, setHasSearched] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [tableData, setTableData] = useState<StaffRow[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { control, handleSubmit } = useForm<FormValues>({
     defaultValues: {
       role: "",
-      // BUG FIX 7: new Date().toISOString().split("T")[0] produces a UTC date string,
-      // which can be one day behind in timezones east of UTC (e.g. India IST = UTC+5:30).
-      // Fixed by using local date components to build the YYYY-MM-DD string correctly.
       attendanceDate: (() => {
         const now = new Date();
         const y = now.getFullYear();
@@ -102,13 +94,26 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
     },
   });
 
+  // Inline table row change handlers
+  const handleRowFieldChange = (
+    id: string | number,
+    field: 'attendance' | 'entryTime' | 'exitTime' | 'note',
+    value: string
+  ) => {
+    setTableData((prev) =>
+      prev.map((row) =>
+        row.id === id ? { ...row, [field]: value as AttendanceStatus } : row
+      )
+    );
+  };
+
+  // Dummy hook forms created strictly to satisfy the <Controller /> inside the table row fields
+  const { control: entryTimeControl } = useForm<{ entryTime: string }>();
+  const { control: exitTimeControl } = useForm<{ exitTime: string }>();
+  const { control: noteControl } = useForm<{ note: string }>();
+
   // Handle Search Submission
   const onSearchSubmit = (data: FormValues) => {
-    // BUG FIX 8: The original comparison used .toLowerCase() === .toLowerCase() which
-    // is a strict equality match. If the user selects "admin" (lowercase option value)
-    // vs role stored as "Admin" this still works because both sides are lowercased.
-    // However the filter was correct. Keeping as-is but adding trim() to be safe
-    // against accidental leading/trailing whitespace in option values.
     const filtered = MOCK_STAFF_DATA.filter(
       (staff) => staff.role.toLowerCase().trim() === data.role.toLowerCase().trim()
     );
@@ -127,33 +132,15 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
     );
   };
 
-  // Inline table row change handlers
-  // BUG FIX 9: The field parameter was typed as `keyof StaffRow`, but the value was
-  // always a plain `string`. This is unsafe because some StaffRow fields are not string
-  // (e.g. `id` can be string | number, `attendance` is AttendanceStatus union).
-  // Narrowed the allowed fields to only the editable string fields to preserve type safety.
-  const handleRowFieldChange = (
-    id: string | number,
-    field: 'attendance' | 'entryTime' | 'exitTime' | 'note',
-    value: string
-  ) => {
-    setTableData((prev) =>
-      prev.map((row) =>
-        row.id === id ? { ...row, [field]: value as AttendanceStatus } : row
-      )
-    );
-  };
-
-  // BUG FIX 10: handleSaveAttendance called the internal setHasSearched/setTableData
-  // to reset state, but never called the `onSave` prop passed from the parent
-  // (StaffDirectory). This meant the parent's callback was never invoked and
-  // isAttendanceOpen in the parent was never set to false — the modal would stay open.
-  // Fixed by calling onSave with tableData before resetting local state.
   const handleSaveAttendance = () => {
-    onSave(tableData);          // Notify parent with the saved data
-    setShowSuccessAlert(true);
-    setHasSearched(false);
-    setTableData([]);
+    setIsSubmitting(true);
+    setTimeout(() => {
+      onSave(tableData);
+      setShowSuccessAlert(true);
+      setHasSearched(false);
+      setTableData([]);
+      setIsSubmitting(false);
+    }, 600);
   };
 
   // --- Dynamic Column Definitions for Controltable ---
@@ -174,10 +161,6 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
               <input
                 type="radio"
                 name={`attendance-${row.id}`}
-                // BUG FIX 11: `value` here is typed as StaffRow[keyof StaffRow]
-                // (a broad union) since Column's render receives the raw cell value.
-                // Comparing it directly to `status` (AttendanceStatus string) would
-                // produce a TypeScript error. Cast to string for the comparison.
                 checked={String(value) === status}
                 onChange={() => handleRowFieldChange(row.id, "attendance", status)}
                 className="w-3.5 h-3.5 accent-blue-600"
@@ -193,11 +176,12 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
       key: "entryTime",
       label: "Entry",
       render: (value, row) => (
-        <input
-          type="time"
+        <TimeField
+          name="entryTime"
+          control={entryTimeControl}
           value={String(value)}
           onChange={(e) => handleRowFieldChange(row.id, "entryTime", e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 outline-none focus:border-blue-400"
+          className="border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 outline-none focus:border-blue-400 mt-0"
         />
       ),
     },
@@ -205,11 +189,12 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
       key: "exitTime",
       label: "Exit",
       render: (value, row) => (
-        <input
-          type="time"
+        <TimeField
+          name="exitTime"
+          control={exitTimeControl}
           value={String(value)}
           onChange={(e) => handleRowFieldChange(row.id, "exitTime", e.target.value)}
-          className="border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 outline-none focus:border-blue-400"
+          className="border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 outline-none focus:border-blue-400 mt-0"
         />
       ),
     },
@@ -217,23 +202,21 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
       key: "note",
       label: "Note",
       render: (value, row) => (
-        <input
-          type="text"
+        <TextareaField
+          name="note"
+          control={noteControl}
           value={String(value)}
+          rows={1}
           placeholder="Add custom note..."
           onChange={(e) => handleRowFieldChange(row.id, "note", e.target.value)}
-          // BUG FIX 12: `min-w-30` is not a valid Tailwind class (valid values start at
-          // min-w-32 for rem-based sizing, or use min-w-[7.5rem] for arbitrary).
-          // Changed to `min-w-[7.5rem]` for the correct 120px minimum width.
-          className="border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 w-full min-w-30 outline-none focus:border-blue-400"
+          className="border border-gray-200 rounded px-2 py-1 text-xs text-gray-700 w-full min-w-32 outline-none focus:border-blue-400 mt-0 resize-y"
         />
       ),
     },
   ];
 
   return (
- 
-    <div className="fixed inset-0 bg-blend-color-burn bg-opacity-40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+    <div className="fixed inset-0 bg-blend-color-burn bg-opacity-40 backdrop-blur-sm flex justify-center items-center z-50 p-4 ">
       <div className="relative w-full max-w-7xl mx-4 bg-gray-50 rounded-2xl shadow-xl p-6 font-sans">
 
         {/* Close Button */}
@@ -247,7 +230,6 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
         </button>
 
         <div className="space-y-4">
-
           {/* Page Title */}
           <h1 className="text-xl font-semibold text-gray-800">Staff Attendance</h1>
 
@@ -259,7 +241,7 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
           )}
 
           {/* Search Parameter Panel */}
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 h-full">
             <p className="text-xs font-semibold text-gray-500 mb-4 uppercase tracking-wider">
               Staff Attendance
             </p>
@@ -285,12 +267,13 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
                 />
               </div>
               <div className="pb-2 w-full md:w-auto">
-                <button
-                  type="submit"
-                  className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-6 py-2 rounded-md transition-colors shadow-sm"
-                >
-                  Search
-                </button>
+                <Button 
+                  type="submit" 
+                  name="Search" 
+                  icon={<SearchIcon size={16} />}
+                  loading={false} 
+                  showAlways={true}
+                />
               </div>
             </form>
           </div>
@@ -317,13 +300,14 @@ const StaffAttendance: React.FC<StaffAttendanceProps> = ({ onClose, onSave }) =>
                   ))}
                 </div>
 
-                <button
+                <Button
                   type="button"
+                  name="Save Attendance"
+                  icon={<SaveIcon />}
+                  loading={isSubmitting}
                   onClick={handleSaveAttendance}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors shadow-sm ml-auto"
-                >
-                  Save Attendance
-                </button>
+                  showAlways={true}
+                />
               </div>
 
               {/* Attendance Interactive Grid Table */}

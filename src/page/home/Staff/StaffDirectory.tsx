@@ -9,6 +9,8 @@ import AddStaffForm from '../Staff/Addstaffform';
 import StaffAttendance from './StaffAttendance';
 import MyLeaves from './StaffLeaves/Leaves';
 
+
+// --- Interfaces ---
 interface StaffMember {
   id: string;
   name: string;
