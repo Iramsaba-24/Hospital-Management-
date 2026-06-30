@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/incompatible-library */
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
@@ -13,7 +12,7 @@ import NameField from '../../../components/controlled/NameField';
 import StaffCard from './StaffCard';
 import AddStaffForm from '../Staff/Addstaffform'; 
 import StaffAttendance from './StaffAttendance';
-
+import StaffProfileView from '../Staff/ViewInfo/StaffProfileView';
 
 // --- Interfaces ---
 interface StaffMember {
@@ -37,7 +36,6 @@ interface KeywordFormValues {
   keywordSearch: string;
 }
 
-// Role color map used when adding a new staff member
 const ROLE_COLOR_MAP: Record<string, StaffMember['roleColor']> = {
   'Super Admin':  { bg: 'bg-green-50',  text: 'text-green-600',  border: 'border-green-400'  },
   'Doctor':       { bg: 'bg-blue-50',   text: 'text-blue-500',   border: 'border-blue-400'   },
@@ -47,10 +45,6 @@ const ROLE_COLOR_MAP: Record<string, StaffMember['roleColor']> = {
   'Receptionist': { bg: 'bg-pink-50',   text: 'text-pink-500',   border: 'border-pink-400'   },
   'Accountant':   { bg: 'bg-orange-50', text: 'text-orange-500', border: 'border-orange-400' },
   'Radiologist':  { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-400' },
-  // BUG FIX 1: 'Pathology' in INITIAL_STAFF didn't match 'Pathologist' key in ROLE_COLOR_MAP,
-  // so roleColor lookup always fell back to DEFAULT_ROLE_COLOR for Belina Turner.
-  // Fixed by aligning the key here to 'Pathology' to match the data, OR use 'Pathologist'
-  // consistently in both. Chose to keep key as 'Pathologist' and fix the data entry below.
   'Pathologist':  { bg: 'bg-slate-50',  text: 'text-slate-500',  border: 'border-slate-400'  },
 };
 
@@ -128,7 +122,6 @@ const INITIAL_STAFF: StaffMember[] = [
     id: '9',
     name: 'Belina Turner',
     phone: '6465465465',
-    // BUG FIX 1 (continued): was 'Pathology', changed to 'Pathologist' to match ROLE_COLOR_MAP key
     role: 'Pathologist',
     image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
     roleColor: { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-400' }
@@ -139,11 +132,8 @@ export default function StaffDirectory() {
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
   const [staffList, setStaffList] = useState<StaffMember[]>(INITIAL_STAFF);
+  const [viewingStaff, setViewingStaff] = useState<StaffMember | null>(null); // ← NEW
 
-  // BUG FIX 2: ID generation was based on staffList.length, which causes duplicate IDs
-  // when a staff member is deleted or when there are already 9+ members (e.g. length=9
-  // gives id '10', but next addition gives '10' again if a deletion occurred).
-  // Fixed by deriving the next numeric ID from the max existing numeric ID.
   const nextNumericId = useMemo(() => {
     const maxId = staffList.reduce((max, m) => {
       const n = parseInt(m.id, 10);
@@ -162,7 +152,6 @@ export default function StaffDirectory() {
     photo: File | null;
   }) => {
     const newMember: StaffMember = {
-      // BUG FIX 2 (continued): use nextNumericId instead of staffList.length + 1
       id: String(nextNumericId),
       name: `${data.firstName} ${data.lastName}`.trim(),
       phone: data.phone,
@@ -187,6 +176,7 @@ export default function StaffDirectory() {
     defaultValues: { keywordSearch: '' }
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const watchedRole = roleForm.watch('roleSearch');
   const watchedKeyword = keywordForm.watch('keywordSearch');
 
@@ -203,26 +193,13 @@ export default function StaffDirectory() {
     });
   }, [watchedRole, watchedKeyword, staffList]);
 
-  // BUG FIX 3: These submit handlers only console.log but the actual filtering is
-  // already reactive via `watch`. The handlers are kept for extensibility (e.g. API calls)
-  // but the searches now also clear the OTHER form's field so filters don't silently
-  // stack in a confusing way if the user forgets they had a prior filter active.
   const onRoleSearchSubmit = (data: RoleFormValues) => {
     console.log('Role Searched:', data.roleSearch);
-    // Optionally clear keyword when a role search is explicitly submitted
-    // keywordForm.reset();
   };
 
   const onKeywordSearchSubmit = (data: KeywordFormValues) => {
     console.log('Keyword Searched:', data.keywordSearch);
-    // Optionally clear role when a keyword search is explicitly submitted
-    // roleForm.reset();
   };
-
-  // BUG FIX 4: The original eslint-disable comment suppressed 'react-hooks/incompatible-library'
-  // which is not a real ESLint rule name. The correct rule (if needed) would be
-  // 'react-hooks/exhaustive-deps'. Removed the invalid disable comment from the top
-  // and added the correct one where actually needed.
 
   return (
     <div className="min-h-screen bg-[#f4f6f9] p-8 font-sans antialiased text-gray-800">
@@ -270,6 +247,7 @@ export default function StaffDirectory() {
           </div>
         </div>
 
+        {/* --- SEARCH FORMS --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-5xl">
           <form
             onSubmit={roleForm.handleSubmit(onRoleSearchSubmit)}
@@ -316,11 +294,15 @@ export default function StaffDirectory() {
           </form>
         </div>
 
-        {/* --- GRID STAFF CARDS --- */}
+        {/* --- STAFF CARDS GRID --- */}
         {filteredStaff.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStaff.map((member) => (
-              <StaffCard key={member.id} member={member} />
+              <StaffCard
+                key={member.id}
+                member={member}
+                onView={setViewingStaff} // ← NEW
+              />
             ))}
           </div>
         ) : (
@@ -350,6 +332,15 @@ export default function StaffDirectory() {
           }}
         />
       )}
+
+      {/* --- STAFF PROFILE VIEW MODAL --- */}
+      {viewingStaff && (                           // ← NEW
+        <StaffProfileView
+          member={viewingStaff}
+          onClose={() => setViewingStaff(null)}
+        />
+      )}
+
     </div>
   );
 }
