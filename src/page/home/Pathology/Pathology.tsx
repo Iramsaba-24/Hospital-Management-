@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import Controltable from "../../../components/controlled/Controltable";
+import Controltable, { type Column } from "../../../components/controlled/Controltable";
 import GenerateBillDialog from "./GenerateBill";
 import { useState } from "react";
 import { pathologyTests } from "./PathologyTestData";
@@ -27,7 +27,7 @@ const Pathology = () => {
   const [openDialog, setOpenDialog] = useState(false);
 const [pathologyBills, setPathologyBills] = useState<PathologyBill[]>([]);
 
-  const columns = [
+  const columns: Column<PathologyBill>[] = [
     { key: "billNo", label: "Bill No" },
     { key: "visitId", label: "Visit ID" },
     { key: "date", label: "Date" },

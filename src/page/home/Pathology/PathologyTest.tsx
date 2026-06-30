@@ -1,5 +1,5 @@
 import { useState } from "react";
-import Controltable from "../../../components/controlled/Controltable";
+import Controltable, { type Column } from "../../../components/controlled/Controltable";
 import ViewPathologyTest from "./ViewPathologyTest";
 import AddPathologyTest from "./AddPathologyTest";
 import { pathologyTests } from "./PathologyTestData";
@@ -29,7 +29,7 @@ const PathologyTest = () => {
   const [selectedTest, setSelectedTest] = useState<PathologyTestData | null>(null);
   const [tests, setTests] = useState(pathologyTests);
 
-  const columns = [
+  const columns: Column<PathologyTestData>[] = [
     { key: "testName", label: "Test Name" },
     { key: "sortName", label: "Sort Name" },
     { key: "testType", label: "Test Type" },
