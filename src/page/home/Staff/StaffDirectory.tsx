@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { UserPlus, CalendarCheck, CreditCard, LogOut, Search } from 'lucide-react';
@@ -7,9 +6,8 @@ import NameField from '../../../components/controlled/NameField';
 import StaffCard from './StaffCard';
 import AddStaffForm from '../Staff/Addstaffform';
 import StaffAttendance from './StaffAttendance';
-import StaffProfileView from '../Staff/ViewInfo/StaffProfileView';
 import MyLeaves from './StaffLeaves/Leaves';
-
+import StaffProfileView from '../Staff/ViewInfo/StaffProfileView'; // ✅ correct import name
 
 // --- Interfaces ---
 interface StaffMember {
@@ -43,78 +41,6 @@ const DEFAULT_ROLE_COLOR: StaffMember['roleColor'] = {
 };
 
 const INITIAL_STAFF: StaffMember[] = [
-  {
-    id: '1',
-    name: 'John Hook',
-    phone: '9686576776',
-    role: 'Super Admin',
-    image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-400' }
-  },
-  {
-    id: '2',
-    name: 'Reyan Jain',
-    phone: '852963741',
-    role: 'Doctor',
-    image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-blue-50', text: 'text-blue-500', border: 'border-blue-400' }
-  },
-  {
-    id: '3',
-    name: 'Harry Grant',
-    phone: '852963741',
-    role: 'Pharmacist',
-    image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-purple-50', text: 'text-purple-500', border: 'border-purple-400' }
-  },
-  {
-    id: '4',
-    name: 'Natasha Romanoff',
-    phone: '9686576776',
-    role: 'Nurse',
-    image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-cyan-50', text: 'text-cyan-500', border: 'border-cyan-400' }
-  },
-  {
-    id: '5',
-    name: 'Jason Abbot',
-    phone: '852963741',
-    role: 'Admin',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-yellow-50', text: 'text-yellow-600', border: 'border-yellow-400' }
-  },
-  {
-    id: '6',
-    name: 'Maria Ford',
-    phone: '852963741',
-    role: 'Receptionist',
-    image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-pink-50', text: 'text-pink-500', border: 'border-pink-400' }
-  },
-  {
-    id: '7',
-    name: 'Brad Frost',
-    phone: '5454464644',
-    role: 'Accountant',
-    image: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-orange-50', text: 'text-orange-500', border: 'border-orange-400' }
-  },
-  {
-    id: '8',
-    name: 'April Clinton',
-    phone: '852963741',
-    role: 'Radiologist',
-    image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-400' }
-  },
-  {
-    id: '9',
-    name: 'Belina Turner',
-    phone: '6465465465',
-    role: 'Pathologist',
-    image: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
-    roleColor: { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-400' }
-  }
   { id: '1', name: 'John Hook',        phone: '9686576776', role: 'Super Admin',  image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-green-50',  text: 'text-green-600',  border: 'border-green-400'  } },
   { id: '2', name: 'Reyan Jain',       phone: '852963741',  role: 'Doctor',       image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-blue-50',   text: 'text-blue-500',   border: 'border-blue-400'   } },
   { id: '3', name: 'Harry Grant',      phone: '852963741',  role: 'Pharmacist',   image: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80',  roleColor: { bg: 'bg-purple-50', text: 'text-purple-500', border: 'border-purple-400' } },
@@ -130,9 +56,11 @@ export default function StaffDirectory() {
   const [pageView,         setPageView]         = useState<PageView>("directory");
   const [isAddFormOpen,    setIsAddFormOpen]    = useState(false);
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
-  const [staffList, setStaffList] = useState<StaffMember[]>(INITIAL_STAFF);
-  const [viewingStaff, setViewingStaff] = useState<StaffMember | null>(null); // ← NEW
   const [staffList,        setStaffList]        = useState<StaffMember[]>(INITIAL_STAFF);
+
+  // ✅ store the selected member instead of just a boolean —
+  // StaffProfileView needs an actual `member` object to render
+  const [selectedMember, setSelectedMember] = useState<StaffMember | null>(null);
 
   const nextNumericId = useMemo(() => {
     const maxId = staffList.reduce((max, m) => {
@@ -161,17 +89,6 @@ export default function StaffDirectory() {
     setIsAddFormOpen(false);
   };
 
-  // --- Search / filter forms ---
-  const roleForm = useForm<RoleFormValues>({
-    defaultValues: { roleSearch: '' }
-  });
-
-  const keywordForm = useForm<KeywordFormValues>({
-    defaultValues: { keywordSearch: '' }
-  });
-
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const watchedRole = roleForm.watch('roleSearch');
   const roleForm    = useForm<RoleFormValues>({ defaultValues: { roleSearch: '' } });
   const keywordForm = useForm<KeywordFormValues>({ defaultValues: { keywordSearch: '' } });
   // eslint-disable-next-line react-hooks/incompatible-library
@@ -186,13 +103,6 @@ export default function StaffDirectory() {
     });
   }, [watchedRole, watchedKeyword, staffList]);
 
-  const onRoleSearchSubmit = (data: RoleFormValues) => {
-    console.log('Role Searched:', data.roleSearch);
-  };
-
-  const onKeywordSearchSubmit = (data: KeywordFormValues) => {
-    console.log('Keyword Searched:', data.keywordSearch);
-  };
   const onRoleSearchSubmit    = () => {};
   const onKeywordSearchSubmit = () => {};
 
@@ -235,7 +145,6 @@ export default function StaffDirectory() {
           </div>
         </div>
 
-        {/* --- SEARCH FORMS --- */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-5xl">
           <form onSubmit={roleForm.handleSubmit(onRoleSearchSubmit)} className="flex items-end gap-4 w-full">
             <div className="flex-1">
@@ -262,15 +171,12 @@ export default function StaffDirectory() {
           </form>
         </div>
 
-        {/* --- STAFF CARDS GRID --- */}
         {filteredStaff.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStaff.map((member) => (
-              <StaffCard
-                key={member.id}
-                member={member}
-                onView={setViewingStaff} // ← NEW
-              />
+              <div key={member.id} className="cursor-pointer" onClick={() => setSelectedMember(member)}>
+                <StaffCard member={member} />
+              </div>
             ))}
           </div>
         ) : (
@@ -279,6 +185,7 @@ export default function StaffDirectory() {
           </div>
         )}
       </div>
+
       {isAddFormOpen && (
         <AddStaffForm
           onClose={() => setIsAddFormOpen(false)}
@@ -286,6 +193,7 @@ export default function StaffDirectory() {
           nextStaffId={nextStaffId}
         />
       )}
+
       {isAttendanceOpen && (
         <StaffAttendance
           onClose={() => setIsAttendanceOpen(false)}
@@ -293,14 +201,13 @@ export default function StaffDirectory() {
         />
       )}
 
-      {/* --- STAFF PROFILE VIEW MODAL --- */}
-      {viewingStaff && (                           // ← NEW
+      {/* ✅ fixed: closing tag restored, correct component + prop names */}
+      {selectedMember && (
         <StaffProfileView
-          member={viewingStaff}
-          onClose={() => setViewingStaff(null)}
+          member={selectedMember}
+          onClose={() => setSelectedMember(null)}
         />
       )}
-
     </div>
   );
 }
